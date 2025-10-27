@@ -1,0 +1,928 @@
+{
+  "agentName": "Document Selection Agent",
+  "primaryFunction": "Intelligently filter relevant documents from enterprise corpus using metadata RAG based on user requirements for both generation and editing cycles",
+  "llmSelection": "Cohere",
+  "performanceTargets": {
+    "responseTime": "<3s",
+    "accuracyTarget": "95% relevance"
+  },
+  "dataFlow": {
+    "inputSchema": {
+      "sessionId": "string",
+      "userId": "string",
+      "selectionId": "string",
+      "cycleType": "enum: ['generation', 'editing']",
+      "userRequirements": {
+        "presentationRequirements": {
+          "topic": "string",
+          "targetAudience": "string or null",
+          "numSlides": "number",
+          "keyThemes": ["array of strings"],
+          "tone": "string or null",
+          "objectives": "string or null"
+        },
+        "dataRequirements": {
+          "documentsRequested": ["array of document names"],
+          "contentToExtract": ["array of specific content types"],
+          "metrics": ["array of metrics/KPIs"],
+          "timePeriods": ["array of time periods"],
+          "comparisons": ["array of comparison types"],
+          "dataCategories": ["array of data categories"]
+        },
+        "visualPreferences": {
+          "chartTypes": ["array of chart types"],
+          "style": "string or null",
+          "includeImages": "boolean or null",
+          "colorScheme": "string or null"
+        },
+        "editingRequirements": {
+          "editType": "enum: ['content', 'structure', 'general'] or null",
+          "targetSlide": "number or null",
+          "specificChanges": ["array of requested changes"],
+          "editScope": "enum: ['single_slide_content', 'multiple_slides_content', 'entire_presentation_content'] or null"
+        }
+      },
+      "accessibleDocuments": [
+        {
+          "documentId": "string",
+          "documentName": "string",
+          "docType": "string",
+          "department": "string",
+          "accessLevel": "string",
+          "summary": "string",
+          "tags": ["array of strings"],
+          "topics": ["array of strings"]
+        }
+      ],
+      "filters": {
+        "docTypes": ["array of strings"],
+        "dateRange": {
+          "startDate": "string (ISO 8601) or null",
+          "endDate": "string (ISO 8601) or null"
+        },
+        "departments": ["array of strings or null"],
+        "maxDocuments": "number (default: 10)"
+      },
+      "editingContext": {
+        "isEditing": "boolean",
+        "previouslySelectedDocuments": [
+          {
+            "documentId": "string",
+            "documentName": "string",
+            "relevanceScore": "number"
+          }
+        ]
+      },
+      "timestamp": "string (ISO 8601)"
+    },
+
+    "outputSchema": {
+      "sessionId": "string",
+      "userId": "string",
+      "selectionId": "string",
+      "cycleType": "enum: ['generation', 'editing']",
+      "selectedDocuments": [
+        {
+          "documentId": "string",
+          "documentName": "string",
+          "docType": "string",
+          "department": "string",
+          "accessLevel": "string",
+          "relevanceScore": "number (0.0-1.0)",
+          "selectionReason": "string",
+          "priority": "enum: ['high', 'medium', 'low']",
+          "matchedCriteria": {
+            "topicMatch": "boolean",
+            "metricsMatch": "boolean",
+            "timePeriodMatch": "boolean",
+            "categoryMatch": "boolean"
+          },
+          "extractionGuidance": {
+            "targetSections": ["array of section names"],
+            "relevantMetrics": ["array of metrics to extract"],
+            "relevantTimePeriods": ["array of time periods"]
+          },
+          "editingMetadata": {
+            "isNewDocument": "boolean (true if not in previouslySelectedDocuments)",
+            "replacesDocument": "string or null (document ID being replaced)",
+            "editReason": "string or null (why this document is needed for the edit)"
+          }
+        }
+      ],
+      "selectionMetadata": {
+        "totalDocumentsConsidered": "number",
+        "totalDocumentsSelected": "number",
+        "averageRelevanceScore": "number",
+        "selectionStrategy": "string",
+        "queryExecutionTime": "string (e.g., '2.3s')",
+        "editingMetadata": {
+          "documentsRetained": "number (documents kept from previous selection)",
+          "documentsAdded": "number (new documents added for edit)",
+          "documentsRemoved": "number (documents no longer needed)"
+        }
+      },
+      "metadataRAGQueries": [
+        {
+          "queryId": "string",
+          "queryText": "string",
+          "queryType": "enum: ['semantic', 'keyword', 'hybrid']",
+          "resultsCount": "number"
+        }
+      ],
+      "documentChangeAnalysis": {
+        "retainedDocuments": ["array of document IDs kept from previous selection"],
+        "addedDocuments": ["array of document IDs newly added"],
+        "removedDocuments": ["array of document IDs no longer needed"],
+        "changeReason": "string (explanation of why document selection changed)"
+      },
+      "nextAction": "enum: ['proceed_to_query_agent', 'insufficient_documents', 'refine_selection', 'no_document_change_needed']",
+      "handoffToAgent": "string or null",
+      "timestamp": "string (ISO 8601)"
+    },
+
+    "metadataRAGEngine": {
+      "description": "Queries metadata RAG to find relevant documents based on user requirements",
+      "queryGeneration": {
+        "semanticQueries": [
+          "Generate queries based on presentation topic and key themes",
+          "Generate queries based on data categories and metrics",
+          "Generate queries based on time periods and comparisons"
+        ],
+        "keywordQueries": [
+          "Extract explicit document names mentioned by user",
+          "Extract specific metrics/KPIs for exact matching",
+          "Extract department and doc_type filters"
+        ],
+        "hybridQueries": [
+          "Combine semantic understanding with keyword precision",
+          "Weight queries based on user requirements specificity"
+        ]
+      },
+      "metadataFields": {
+        "searchableFields": [
+          "document_id",
+          "title",
+          "summary",
+          "department",
+          "doc_type",
+          "tags",
+          "topics",
+          "section_titles",
+          "date_created",
+          "last_modified"
+        ],
+        "filterableFields": [
+          "department",
+          "doc_type",
+          "access_level",
+          "date_created",
+          "last_modified",
+          "version"
+        ]
+      },
+      "rankingStrategy": {
+        "factors": [
+          "Semantic similarity to topic and themes",
+          "Presence of requested metrics/KPIs",
+          "Time period alignment",
+          "Document type relevance",
+          "Recency (if applicable)"
+        ],
+        "weightings": {
+          "topicRelevance": 0.35,
+          "metricsMatch": 0.25,
+          "timePeriodMatch": 0.20,
+          "docTypeMatch": 0.15,
+          "recency": 0.05
+        }
+      }
+    },
+
+    "selectionLogic": {
+      "generationMode": {
+        "steps": [
+          "1. Parse user requirements and extract key selection criteria",
+          "2. Generate multiple metadata RAG queries (semantic + keyword + hybrid)",
+          "3. Execute queries against metadata RAG engine",
+          "4. Aggregate and deduplicate results",
+          "5. Score documents based on multi-factor relevance",
+          "6. Filter by accessible documents (RBAC pre-filtered)",
+          "7. Rank and select top N documents based on maxDocuments",
+          "8. Generate extraction guidance for each selected document",
+          "9. Return selected documents with metadata"
+        ]
+      },
+      "editingMode": {
+        "steps": [
+          "1. Analyze editing requirements and determine if new documents are needed",
+          "2. Check if existing document sources can fulfill the edit request",
+          "3. If new data/metrics needed: Generate targeted metadata RAG queries",
+          "4. Execute queries for supplementary or replacement documents",
+          "5. Compare new results with previouslySelectedDocuments",
+          "6. Decide which documents to retain, add, or remove",
+          "7. Generate extraction guidance specific to edit requirements",
+          "8. Return updated document selection with change analysis"
+        ],
+        "optimizations": [
+          "Reuse existing documents when possible to minimize RAG queries",
+          "Only query for new documents if edit requires new data sources",
+          "Prioritize documents already in context for efficiency",
+          "For content edits within same topic: Often no new documents needed"
+        ]
+      },
+      "fallbackStrategies": [
+        "If no documents found: Broaden semantic queries",
+        "If too many documents: Apply stricter filters (doc_type, date_range)",
+        "If low relevance scores: Suggest refinement to user requirements",
+        "If editing and no new documents needed: Return previouslySelectedDocuments with no_document_change_needed action"
+      ]
+    },
+
+    "cycleModes": {
+      "generationMode": {
+        "description": "Initial document selection for presentation generation",
+        "activeFields": [
+          "presentationRequirements",
+          "dataRequirements",
+          "visualPreferences"
+        ],
+        "ignoredFields": [
+          "editingContext",
+          "editingRequirements"
+        ],
+        "behavior": "Performs comprehensive document search and selection from scratch"
+      },
+      "editingMode": {
+        "description": "Incremental document selection for presentation edits",
+        "activeFields": [
+          "editingRequirements",
+          "editingContext",
+          "dataRequirements (if new data needed)"
+        ],
+        "requiredFields": [
+          "editingContext.previouslySelectedDocuments",
+          "editingContext.currentSlideContent"
+        ],
+        "behavior": "Optimizes by reusing existing documents and only fetching new ones if edit requires additional data sources",
+        "editScenarios": {
+          "contentEditSameSources": {
+            "description": "Edit uses same data sources (e.g., rewording, emphasis change)",
+            "action": "Return previouslySelectedDocuments, set nextAction to no_document_change_needed"
+          },
+          "contentEditNewMetrics": {
+            "description": "Edit requires new metrics from existing documents",
+            "action": "Retain existing documents, update extractionGuidance with new target sections/metrics"
+          },
+          "contentEditNewSources": {
+            "description": "Edit requires data from new documents",
+            "action": "Query metadata RAG for new documents, add to selection, provide change analysis"
+          },
+          "structureEdit": {
+            "description": "Slide reordering or restructuring",
+            "action": "Usually no new documents needed, return existing selection"
+          }
+        }
+      }
+    }
+  },
+
+  "rationale": "Superior semantic understanding for intelligent filtering and document selection using metadata RAG with efficient editing support",
+
+  "integrationPoints": {
+    "inputFrom": [
+      "Conversation Agent (user requirements, accessible documents, and editing context)"
+    ],
+    "handoffAgents": [
+      "Query Agent (after document selection complete for both generation and editing)"
+    ],
+    "dataStores": {
+      "metadataRAG": "Metadata RAG engine containing document metadata (KG + VectorDB)",
+      "redis": "Cache selection results for session reuse and edit history"
+    }
+  },
+
+  "examples": {
+    "generationModeInput": {
+      "sessionId": "session_789",
+      "userId": "user_456",
+      "selectionId": "sel_001",
+      "cycleType": "generation",
+      "userRequirements": {
+        "presentationRequirements": {
+          "topic": "Q3 operational performance",
+          "targetAudience": "executive team",
+          "numSlides": 10,
+          "keyThemes": ["efficiency", "productivity", "cost optimization"],
+          "tone": "professional",
+          "objectives": "Demonstrate Q3 improvements and identify areas for Q4 focus"
+        },
+        "dataRequirements": {
+          "documentsRequested": ["Q3_Operations_Report.pdf"],
+          "contentToExtract": ["operational metrics", "KPIs", "performance trends"],
+          "metrics": ["efficiency rate", "productivity index", "cost per unit"],
+          "timePeriods": ["Q3 2024", "Q2 2024"],
+          "comparisons": ["QoQ", "YoY"],
+          "dataCategories": ["operational", "financial"]
+        },
+        "visualPreferences": {
+          "chartTypes": ["line chart", "bar chart"],
+          "style": "corporate",
+          "includeImages": true,
+          "colorScheme": "blue-green"
+        },
+        "editingRequirements": null
+      },
+      "accessibleDocuments": [
+        {
+          "documentId": "doc_001",
+          "documentName": "Q3_Operations_Report.pdf",
+          "docType": "operations_report",
+          "department": "operations",
+          "accessLevel": "internal",
+          "summary": "Q3 operational metrics and KPIs",
+          "tags": ["operations", "Q3", "performance"],
+          "topics": ["efficiency", "productivity"]
+        },
+        {
+          "documentId": "doc_002",
+          "documentName": "Q2_Operations_Report.pdf",
+          "docType": "operations_report",
+          "department": "operations",
+          "accessLevel": "internal",
+          "summary": "Q2 operational metrics and KPIs",
+          "tags": ["operations", "Q2", "performance"],
+          "topics": ["efficiency", "productivity"]
+        },
+        {
+          "documentId": "doc_003",
+          "documentName": "2024_Cost_Analysis.xlsx",
+          "docType": "financial_report",
+          "department": "finance",
+          "accessLevel": "internal",
+          "summary": "2024 cost breakdown and analysis",
+          "tags": ["finance", "costs", "2024"],
+          "topics": ["cost optimization", "budget"]
+        }
+      ],
+      "filters": {
+        "docTypes": ["operations_report", "financial_report"],
+        "dateRange": {
+          "startDate": "2024-01-01",
+          "endDate": "2024-09-30"
+        },
+        "departments": ["operations", "finance"],
+        "maxDocuments": 10
+      },
+      "editingContext": {
+        "isEditing": false,
+        "previouslySelectedDocuments": [],
+        "currentSlideContent": null
+      },
+      "timestamp": "2025-10-18T10:35:00Z"
+    },
+
+    "generationModeOutput": {
+      "sessionId": "session_789",
+      "userId": "user_456",
+      "selectionId": "sel_001",
+      "cycleType": "generation",
+      "selectedDocuments": [
+        {
+          "documentId": "doc_001",
+          "documentName": "Q3_Operations_Report.pdf",
+          "docType": "operations_report",
+          "department": "operations",
+          "accessLevel": "internal",
+          "relevanceScore": 0.95,
+          "selectionReason": "Primary document explicitly requested by user, contains Q3 operational metrics, KPIs, and performance trends directly aligned with presentation topic",
+          "priority": "high",
+          "matchedCriteria": {
+            "topicMatch": true,
+            "metricsMatch": true,
+            "timePeriodMatch": true,
+            "categoryMatch": true
+          },
+          "extractionGuidance": {
+            "targetSections": ["Executive Summary", "Key Performance Indicators", "Efficiency Metrics", "Productivity Analysis"],
+            "relevantMetrics": ["efficiency rate", "productivity index", "cost per unit"],
+            "relevantTimePeriods": ["Q3 2024"]
+          },
+          "editingMetadata": {
+            "isNewDocument": true,
+            "replacesDocument": null,
+            "editReason": null
+          }
+        },
+        {
+          "documentId": "doc_002",
+          "documentName": "Q2_Operations_Report.pdf",
+          "docType": "operations_report",
+          "department": "operations",
+          "accessLevel": "internal",
+          "relevanceScore": 0.82,
+          "selectionReason": "Contains Q2 data for QoQ comparison as requested. Provides baseline for demonstrating Q3 improvements",
+          "priority": "high",
+          "matchedCriteria": {
+            "topicMatch": true,
+            "metricsMatch": true,
+            "timePeriodMatch": true,
+            "categoryMatch": true
+          },
+          "extractionGuidance": {
+            "targetSections": ["Key Performance Indicators", "Efficiency Metrics"],
+            "relevantMetrics": ["efficiency rate", "productivity index", "cost per unit"],
+            "relevantTimePeriods": ["Q2 2024"]
+          },
+          "editingMetadata": {
+            "isNewDocument": true,
+            "replacesDocument": null,
+            "editReason": null
+          }
+        },
+        {
+          "documentId": "doc_003",
+          "documentName": "2024_Cost_Analysis.xlsx",
+          "docType": "financial_report",
+          "department": "finance",
+          "accessLevel": "internal",
+          "relevanceScore": 0.73,
+          "selectionReason": "Supports cost optimization theme and provides cost per unit metric for financial perspective on operational performance",
+          "priority": "medium",
+          "matchedCriteria": {
+            "topicMatch": false,
+            "metricsMatch": true,
+            "timePeriodMatch": true,
+            "categoryMatch": true
+          },
+          "extractionGuidance": {
+            "targetSections": ["Q3 Cost Breakdown", "Cost per Unit Analysis"],
+            "relevantMetrics": ["cost per unit"],
+            "relevantTimePeriods": ["Q3 2024", "Q2 2024"]
+          },
+          "editingMetadata": {
+            "isNewDocument": true,
+            "replacesDocument": null,
+            "editReason": null
+          }
+        }
+      ],
+      "selectionMetadata": {
+        "totalDocumentsConsidered": 3,
+        "totalDocumentsSelected": 3,
+        "averageRelevanceScore": 0.83,
+        "selectionStrategy": "Hybrid semantic + keyword matching with multi-factor ranking",
+        "queryExecutionTime": "2.1s",
+        "editingMetadata": null
+      },
+      "metadataRAGQueries": [
+        {
+          "queryId": "query_001",
+          "queryText": "Q3 operational performance efficiency productivity KPIs metrics",
+          "queryType": "semantic",
+          "resultsCount": 2
+        },
+        {
+          "queryId": "query_002",
+          "queryText": "efficiency rate productivity index cost per unit Q3 2024",
+          "queryType": "keyword",
+          "resultsCount": 3
+        },
+        {
+          "queryId": "query_003",
+          "queryText": "Q2 2024 operational metrics for comparison baseline",
+          "queryType": "semantic",
+          "resultsCount": 1
+        },
+        {
+          "queryId": "query_004",
+          "queryText": "cost optimization financial analysis Q3",
+          "queryType": "hybrid",
+          "resultsCount": 1
+        }
+      ],
+      "documentChangeAnalysis": null,
+      "nextAction": "proceed_to_query_agent",
+      "handoffToAgent": "Query Agent",
+      "timestamp": "2025-10-18T10:35:02Z"
+    },
+
+    "editingModeInput_NoNewDocuments": {
+      "sessionId": "session_790",
+      "userId": "user_456",
+      "selectionId": "sel_050",
+      "cycleType": "editing",
+      "userRequirements": {
+        "presentationRequirements": {
+          "topic": "Q3 operational performance",
+          "targetAudience": "executive team",
+          "numSlides": 10,
+          "keyThemes": ["efficiency", "productivity", "cost optimization"],
+          "tone": "professional",
+          "objectives": "Demonstrate Q3 improvements and identify areas for Q4 focus"
+        },
+        "dataRequirements": {
+          "documentsRequested": [],
+          "contentToExtract": ["efficiency metrics"],
+          "metrics": ["efficiency rate"],
+          "timePeriods": ["Q3 2024"],
+          "comparisons": [],
+          "dataCategories": ["operational"]
+        },
+        "visualPreferences": null,
+        "editingRequirements": {
+          "editType": "content",
+          "targetSlide": 3,
+          "specificChanges": [
+            "Replace productivity content with efficiency metrics",
+            "Focus more on efficiency rate"
+          ],
+          "editScope": "single_slide_content"
+        }
+      },
+      "accessibleDocuments": [
+        {
+          "documentId": "doc_001",
+          "documentName": "Q3_Operations_Report.pdf",
+          "docType": "operations_report",
+          "department": "operations",
+          "accessLevel": "internal",
+          "summary": "Q3 operational metrics and KPIs",
+          "tags": ["operations", "Q3", "performance"],
+          "topics": ["efficiency", "productivity"]
+        }
+      ],
+      "filters": {
+        "docTypes": ["operations_report"],
+        "dateRange": null,
+        "departments": ["operations"],
+        "maxDocuments": 10
+      },
+      "editingContext": {
+        "isEditing": true,
+        "previouslySelectedDocuments": [
+          {
+            "documentId": "doc_001",
+            "documentName": "Q3_Operations_Report.pdf",
+            "relevanceScore": 0.95
+          },
+          {
+            "documentId": "doc_002",
+            "documentName": "Q2_Operations_Report.pdf",
+            "relevanceScore": 0.82
+          },
+          {
+            "documentId": "doc_003",
+            "documentName": "2024_Cost_Analysis.xlsx",
+            "relevanceScore": 0.73
+          }
+        ],
+        "currentSlideContent": {
+          "slideNumber": 3,
+          "currentDocumentSources": ["doc_001"],
+          "currentMetrics": ["productivity index"],
+          "currentDataCategories": ["operational"]
+        }
+      },
+      "timestamp": "2025-10-18T11:45:00Z"
+    },
+
+    "editingModeOutput_NoNewDocuments": {
+      "sessionId": "session_790",
+      "userId": "user_456",
+      "selectionId": "sel_050",
+      "cycleType": "editing",
+      "selectedDocuments": [
+        {
+          "documentId": "doc_001",
+          "documentName": "Q3_Operations_Report.pdf",
+          "docType": "operations_report",
+          "department": "operations",
+          "accessLevel": "internal",
+          "relevanceScore": 0.95,
+          "selectionReason": "Existing document contains both productivity and efficiency metrics. Can fulfill edit request without additional documents",
+          "priority": "high",
+          "matchedCriteria": {
+            "topicMatch": true,
+            "metricsMatch": true,
+            "timePeriodMatch": true,
+            "categoryMatch": true
+          },
+          "extractionGuidance": {
+            "targetSections": ["Efficiency Metrics", "Efficiency Rate Analysis"],
+            "relevantMetrics": ["efficiency rate"],
+            "relevantTimePeriods": ["Q3 2024"]
+          },
+          "editingMetadata": {
+            "isNewDocument": false,
+            "replacesDocument": null,
+            "editReason": "Retained from previous selection. Contains efficiency metrics needed for edit"
+          }
+        },
+        {
+          "documentId": "doc_002",
+          "documentName": "Q2_Operations_Report.pdf",
+          "docType": "operations_report",
+          "department": "operations",
+          "accessLevel": "internal",
+          "relevanceScore": 0.82,
+          "selectionReason": "Retained for potential comparison data",
+          "priority": "medium",
+          "matchedCriteria": {
+            "topicMatch": true,
+            "metricsMatch": true,
+            "timePeriodMatch": true,
+            "categoryMatch": true
+          },
+          "extractionGuidance": {
+            "targetSections": ["Efficiency Metrics"],
+            "relevantMetrics": ["efficiency rate"],
+            "relevantTimePeriods": ["Q2 2024"]
+          },
+          "editingMetadata": {
+            "isNewDocument": false,
+            "replacesDocument": null,
+            "editReason": "Retained from previous selection for consistency"
+          }
+        },
+        {
+          "documentId": "doc_003",
+          "documentName": "2024_Cost_Analysis.xlsx",
+          "docType": "financial_report",
+          "department": "finance",
+          "accessLevel": "internal",
+          "relevanceScore": 0.73,
+          "selectionReason": "Retained from previous selection",
+          "priority": "low",
+          "matchedCriteria": {
+            "topicMatch": false,
+            "metricsMatch": false,
+            "timePeriodMatch": true,
+            "categoryMatch": false
+          },
+          "extractionGuidance": {
+            "targetSections": ["Q3 Cost Breakdown"],
+            "relevantMetrics": ["cost per unit"],
+            "relevantTimePeriods": ["Q3 2024"]
+          },
+          "editingMetadata": {
+            "isNewDocument": false,
+            "replacesDocument": null,
+            "editReason": "Retained from previous selection, not directly related to edit"
+          }
+        }
+      ],
+      "selectionMetadata": {
+        "totalDocumentsConsidered": 3,
+        "totalDocumentsSelected": 3,
+        "averageRelevanceScore": 0.83,
+        "selectionStrategy": "Document reuse optimization - no new RAG queries needed",
+        "queryExecutionTime": "0.1s",
+        "editingMetadata": {
+          "documentsRetained": 3,
+          "documentsAdded": 0,
+          "documentsRemoved": 0
+        }
+      },
+      "metadataRAGQueries": [],
+      "documentChangeAnalysis": {
+        "retainedDocuments": ["doc_001", "doc_002", "doc_003"],
+        "addedDocuments": [],
+        "removedDocuments": [],
+        "changeReason": "Edit request for efficiency metrics can be fulfilled by existing Q3_Operations_Report.pdf. Updated extraction guidance to target efficiency sections instead of productivity sections"
+      },
+      "nextAction": "proceed_to_query_agent",
+      "handoffToAgent": "Query Agent",
+      "timestamp": "2025-10-18T11:45:01Z"
+    },
+
+    "editingModeInput_NewDocumentsNeeded": {
+      "sessionId": "session_791",
+      "userId": "user_456",
+      "selectionId": "sel_051",
+      "cycleType": "editing",
+      "userRequirements": {
+        "presentationRequirements": {
+          "topic": "Q3 operational performance",
+          "targetAudience": "executive team",
+          "numSlides": 10,
+          "keyThemes": ["efficiency", "productivity", "cost optimization", "employee satisfaction"],
+          "tone": "professional",
+          "objectives": "Demonstrate Q3 improvements and identify areas for Q4 focus"
+        },
+        "dataRequirements": {
+          "documentsRequested": ["Employee_Satisfaction_Survey_Q3.pdf"],
+          "contentToExtract": ["employee satisfaction scores", "survey results"],
+          "metrics": ["satisfaction score", "engagement rate"],
+          "timePeriods": ["Q3 2024"],
+          "comparisons": [],
+          "dataCategories": ["operational", "hr"]
+        },
+        "visualPreferences": null,
+        "editingRequirements": {
+          "editType": "content",
+          "targetSlide": 7,
+          "specificChanges": [
+            "Add employee satisfaction data to show connection between productivity and satisfaction"
+          ],
+          "editScope": "single_slide_content"
+        }
+      },
+      "accessibleDocuments": [
+        {
+          "documentId": "doc_004",
+          "documentName": "Employee_Satisfaction_Survey_Q3.pdf",
+          "docType": "hr_survey",
+          "department": "hr",
+          "accessLevel": "internal",
+          "summary": "Q3 employee satisfaction survey results",
+          "tags": ["hr", "satisfaction", "Q3", "survey"],
+          "topics": ["employee engagement", "satisfaction"]
+        }
+      ],
+      "filters": {
+        "docTypes": ["hr_survey", "operations_report"],
+        "dateRange": {
+          "startDate": "2024-07-01",
+          "endDate": "2024-09-30"
+        },
+        "departments": ["hr", "operations"],
+        "maxDocuments": 10
+      },
+      "editingContext": {
+        "isEditing": true,
+        "previouslySelectedDocuments": [
+          {
+            "documentId": "doc_001",
+            "documentName": "Q3_Operations_Report.pdf",
+            "relevanceScore": 0.95
+          },
+          {
+            "documentId": "doc_002",
+            "documentName": "Q2_Operations_Report.pdf",
+            "relevanceScore": 0.82
+          },
+          {
+            "documentId": "doc_003",
+            "documentName": "2024_Cost_Analysis.xlsx",
+            "relevanceScore": 0.73
+          }
+        ],
+        "currentSlideContent": {
+          "slideNumber": 7,
+          "currentDocumentSources": ["doc_001"],
+          "currentMetrics": ["productivity index"],
+          "currentDataCategories": ["operational"]
+        }
+      },
+      "timestamp": "2025-10-18T12:00:00Z"
+    },
+
+    "editingModeOutput_NewDocumentsAdded": {
+      "sessionId": "session_791",
+      "userId": "user_456",
+      "selectionId": "sel_051",
+      "cycleType": "editing",
+      "selectedDocuments": [
+        {
+          "documentId": "doc_001",
+          "documentName": "Q3_Operations_Report.pdf",
+          "docType": "operations_report",
+          "department": "operations",
+          "accessLevel": "internal",
+          "relevanceScore": 0.95,
+          "selectionReason": "Retained from previous selection for operational context",
+          "priority": "high",
+          "matchedCriteria": {
+            "topicMatch": true,
+            "metricsMatch": true,
+            "timePeriodMatch": true,
+            "categoryMatch": true
+          },
+          "extractionGuidance": {
+            "targetSections": ["Productivity Analysis"],
+            "relevantMetrics": ["productivity index"],
+            "relevantTimePeriods": ["Q3 2024"]
+          },
+          "editingMetadata": {
+            "isNewDocument": false,
+            "replacesDocument": null,
+            "editReason": "Retained for productivity data to correlate with satisfaction"
+          }
+        },
+        {
+          "documentId": "doc_002",
+          "documentName": "Q2_Operations_Report.pdf",
+          "docType": "operations_report",
+          "department": "operations",
+          "accessLevel": "internal",
+          "relevanceScore": 0.82,
+          "selectionReason": "Retained from previous selection",
+          "priority": "medium",
+          "matchedCriteria": {
+            "topicMatch": true,
+            "metricsMatch": true,
+            "timePeriodMatch": true,
+            "categoryMatch": true
+          },
+          "extractionGuidance": {
+            "targetSections": ["Productivity Analysis"],
+            "relevantMetrics": ["productivity index"],
+            "relevantTimePeriods": ["Q2 2024"]
+          },
+          "editingMetadata": {
+            "isNewDocument": false,
+            "replacesDocument": null,
+            "editReason": "Retained for consistency"
+          }
+        },
+        {
+          "documentId": "doc_003",
+          "documentName": "2024_Cost_Analysis.xlsx",
+          "docType": "financial_report",
+          "department": "finance",
+          "accessLevel": "internal",
+          "relevanceScore": 0.73,
+          "selectionReason": "Retained from previous selection",
+          "priority": "low",
+          "matchedCriteria": {
+            "topicMatch": false,
+            "metricsMatch": false,
+            "timePeriodMatch": true,
+            "categoryMatch": false
+          },
+          "extractionGuidance": {
+            "targetSections": ["Q3 Cost Breakdown"],
+            "relevantMetrics": ["cost per unit"],
+            "relevantTimePeriods": ["Q3 2024"]
+          },
+          "editingMetadata": {
+            "isNewDocument": false,
+            "replacesDocument": null,
+            "editReason": "Retained from previous selection"
+          }
+        },
+        {
+          "documentId": "doc_004",
+          "documentName": "Employee_Satisfaction_Survey_Q3.pdf",
+          "docType": "hr_survey",
+          "department": "hr",
+          "accessLevel": "internal",
+          "relevanceScore": 0.88,
+          "selectionReason": "Newly added document explicitly requested by user for employee satisfaction data to complement productivity analysis",
+          "priority": "high",
+          "matchedCriteria": {
+            "topicMatch": true,
+            "metricsMatch": true,
+            "timePeriodMatch": true,
+            "categoryMatch": true
+          },
+          "extractionGuidance": {
+            "targetSections": ["Overall Satisfaction Scores", "Engagement Metrics", "Q3 Results Summary"],
+            "relevantMetrics": ["satisfaction score", "engagement rate"],
+            "relevantTimePeriods": ["Q3 2024"]
+          },
+          "editingMetadata": {
+            "isNewDocument": true,
+            "replacesDocument": null,
+            "editReason": "Added to provide employee satisfaction data for correlation with productivity metrics on slide 7"
+          }
+        }
+      ],
+      "selectionMetadata": {
+        "totalDocumentsConsidered": 4,
+        "totalDocumentsSelected": 4,
+        "averageRelevanceScore": 0.85,
+        "selectionStrategy": "Incremental selection - retained existing documents and added HR survey document",
+        "queryExecutionTime": "1.8s",
+        "editingMetadata": {
+          "documentsRetained": 3,
+          "documentsAdded": 1,
+          "documentsRemoved": 0
+        }
+      },
+      "metadataRAGQueries": [
+        {
+          "queryId": "query_101",
+          "queryText": "employee satisfaction survey Q3 2024",
+          "queryType": "keyword",
+          "resultsCount": 1
+        },
+        {
+          "queryId": "query_102",
+          "queryText": "employee engagement satisfaction scores Q3",
+          "queryType": "semantic",
+          "resultsCount": 1
+        }
+      ],
+      "documentChangeAnalysis": {
+        "retainedDocuments": ["doc_001", "doc_002", "doc_003"],
+        "addedDocuments": ["doc_004"],
+        "removedDocuments": [],
+        "changeReason": "Edit request requires employee satisfaction data not present in existing documents. Added Employee_Satisfaction_Survey_Q3.pdf to fulfill requirement for showing connection between productivity and satisfaction"
+      },
+      "nextAction": "proceed_to_query_agent",
+      "handoffToAgent": "Query Agent",
+      "timestamp": "2025-10-18T12:00:02Z"
+    }
+  }
+}

@@ -1,0 +1,872 @@
+{
+  "agentName": "QA Agent",
+  "primaryFunction": "Validate presentation content accuracy against source documents using RAG engine, detect errors, inconsistencies, and ensure data integrity for both generation and editing cycles",
+  "llmSelection": "Claude-4-Sonnet",
+  "performanceTargets": {
+    "responseTime": "<1s per slide",
+    "accuracyTarget": "99% error detection",
+    "falsePositiveRate": "<5%"
+  },
+  "dataFlow": {
+    "inputSchema": {
+      "sessionId": "string",
+      "userId": "string",
+      "qaId": "string",
+      "cycleType": "enum: ['generation', 'editing']",
+      "presentationContent": {
+        "presentationTitle": "string",
+        "totalSlides": "number",
+        "slides": [
+          {
+            "slideNumber": "number",
+            "slideType": "string",
+            "title": "string",
+            "content": {
+              "mainText": "string",
+              "bulletPoints": [
+                {
+                  "bulletText": "string",
+                  "subBullets": ["array of sub-bullet objects"],
+                  "dataPoint": {
+                    "metricName": "string or null",
+                    "value": "string or number or null",
+                    "unit": "string or null",
+                    "timePeriod": "string or null",
+                    "comparison": "string or null",
+                    "sourceQueryId": "string or null"
+                  },
+                  "citation": {
+                    "documentName": "string or null",
+                    "sectionName": "string or null",
+                    "pageNumber": "string or null"
+                  }
+                }
+              ],
+              "dataVisualizations": ["array of visualization objects"],
+              "citations": ["array of citation objects"]
+            },
+            "speakerNotes": "string"
+          }
+        ]
+      },
+      "sourceDocuments": [
+        {
+          "documentId": "string",
+          "documentName": "string",
+          "docType": "string"
+        }
+      ],
+      "queryResults": [
+        {
+          "queryId": "string",
+          "llmEnhancedAnswer": {
+            "answer": "string",
+            "sourceReferences": ["array of source reference objects"],
+            "extractedData": {
+              "metrics": ["array of metric objects"],
+              "insights": ["array of strings"],
+              "trends": ["array of strings"],
+              "comparisons": ["array of comparison objects"]
+            }
+          },
+          "ragRetrieval": {
+            "retrievedChunks": ["array of chunk objects"]
+          }
+        }
+      ],
+      "validationRules": {
+        "factualAccuracy": "boolean (default: true)",
+        "numericalConsistency": "boolean (default: true)",
+        "citationValidation": "boolean (default: true)",
+        "crossSlideConsistency": "boolean (default: true)",
+        "unitValidation": "boolean (default: true)",
+        "calculationVerification": "boolean (default: true)",
+        "sourceAlignment": "boolean (default: true)"
+      },
+      "ragEngineAccess": {
+        "enabled": "boolean (default: true)",
+        "retrievalParams": {
+          "topK": "number (default: 3)",
+          "similarityThreshold": "number (default: 0.8)"
+        }
+      },
+      "editingContext": {
+        "isEditing": "boolean",
+        "targetSlidesForValidation": ["array of slide numbers to validate"],
+        "previousValidationResults": {
+          "qaId": "string or null",
+          "validationResults": "object or null"
+        }
+      },
+      "timestamp": "string (ISO 8601)"
+    },
+
+    "outputSchema": {
+      "sessionId": "string",
+      "userId": "string",
+      "qaId": "string",
+      "cycleType": "enum: ['generation', 'editing']",
+      "validationResults": {
+        "overallScore": "number (0.0-1.0, 1.0 = perfect)",
+        "passedValidation": "boolean",
+        "validatedSlides": "number",
+        "totalIssuesFound": "number",
+        "criticalErrors": "number",
+        "numWarnings": "number",
+        "errors": [
+          {
+            "errorId": "string",
+            "slideNumber": "number",
+            "slideTitle": "string",
+            "errorType": "enum: ['factual_inaccuracy', 'numerical_inconsistency', 'citation_missing', 'citation_invalid', 'unit_mismatch', 'calculation_error', 'contradiction', 'source_misalignment', 'unsupported_claim']",
+            "severity": "enum: ['critical', 'high', 'medium', 'low']",
+            "location": {
+              "bulletIndex": "number or null",
+              "subBulletIndex": "number or null",
+              "fieldType": "enum: ['bulletText', 'dataPoint', 'citation', 'visualization', 'mainText']"
+            },
+            "description": "string (clear description of the error)",
+            "currentValue": "string (what the content currently states)",
+            "expectedValue": "string or null (what it should be based on sources)",
+            "sourceReference": {
+              "documentName": "string or null",
+              "sectionName": "string or null",
+              "snippet": "string or null"
+            },
+            "suggestedFix": "string (actionable recommendation to fix the error)",
+            "autoFixable": "boolean (whether this can be automatically corrected)"
+          }
+        ],
+        "warnings": [
+          {
+            "warningId": "string",
+            "slideNumber": "number",
+            "warningType": "enum: ['potential_ambiguity', 'low_confidence', 'missing_context', 'formatting_inconsistency', 'style_issue']",
+            "severity": "enum: ['medium', 'low']",
+            "description": "string",
+            "recommendation": "string"
+          }
+        ],
+        "validationByCategory": {
+          "factualAccuracy": {
+            "checked": "boolean",
+            "passed": "boolean",
+            "issuesFound": "number",
+            "score": "number (0.0-1.0)"
+          },
+          "numericalConsistency": {
+            "checked": "boolean",
+            "passed": "boolean",
+            "issuesFound": "number",
+            "score": "number (0.0-1.0)"
+          },
+          "citationValidation": {
+            "checked": "boolean",
+            "passed": "boolean",
+            "issuesFound": "number",
+            "score": "number (0.0-1.0)"
+          },
+          "crossSlideConsistency": {
+            "checked": "boolean",
+            "passed": "boolean",
+            "issuesFound": "number",
+            "score": "number (0.0-1.0)"
+          },
+          "unitValidation": {
+            "checked": "boolean",
+            "passed": "boolean",
+            "issuesFound": "number",
+            "score": "number (0.0-1.0)"
+          },
+          "calculationVerification": {
+            "checked": "boolean",
+            "passed": "boolean",
+            "issuesFound": "number",
+            "score": "number (0.0-1.0)"
+          },
+          "sourceAlignment": {
+            "checked": "boolean",
+            "passed": "boolean",
+            "issuesFound": "number",
+            "score": "number (0.0-1.0)"
+          }
+        },
+        "slideValidationSummary": [
+          {
+            "slideNumber": "number",
+            "slideTitle": "string",
+            "passed": "boolean",
+            "score": "number (0.0-1.0)",
+            "issuesCount": "number",
+            "criticalErrorsCount": "number"
+          }
+        ]
+      },
+      "correctionActions": {
+        "requiresManualReview": "boolean",
+        "autoFixableErrors": "number",
+        "suggestedWorkflow": "enum: ['approve', 'minor_corrections', 'major_revisions', 'regenerate']",
+        "estimatedCorrectionTime": "string (e.g., '5-10 minutes')"
+      },
+      "nextAction": "enum: ['proceed_to_format_agent', 'return_to_content_agent', 'manual_review_required', 'approved']",
+      "handoffToAgent": "string or null",
+      "timestamp": "string (ISO 8601)"
+    },
+
+    "validationLogic": {
+      "generationMode": {
+        "description": "Comprehensive validation of all generated slides",
+        "steps": [
+          "1. Validate each slide sequentially",
+          "2. Check factual accuracy against queryResults and RAG sources",
+          "3. Verify numerical data consistency (values, units, calculations)",
+          "4. Validate all citations reference valid sources",
+          "5. Check cross-slide consistency (same metrics reported consistently)",
+          "6. Verify data point units are appropriate and consistent",
+          "7. Validate calculations and comparisons are mathematically correct",
+          "8. Ensure all data claims are supported by sources",
+          "9. Aggregate errors and warnings across all slides",
+          "10. Calculate overall validation score and pass/fail status"
+        ],
+        "validationCategories": {
+          "factualAccuracy": {
+            "description": "Verify factual claims match source documents",
+            "checks": [
+              "Compare content claims against queryResults",
+              "Query RAG engine for verification of specific claims",
+              "Validate insights and trends are supported by data",
+              "Check for unsupported or speculative statements"
+            ]
+          },
+          "numericalConsistency": {
+            "description": "Ensure numerical data is accurate and consistent",
+            "checks": [
+              "Verify metric values match source documents exactly",
+              "Check that same metrics have same values across slides",
+              "Validate numerical ranges and thresholds are correct",
+              "Ensure percentages, decimals formatted consistently"
+            ]
+          },
+          "citationValidation": {
+            "description": "Verify all citations are valid and complete",
+            "checks": [
+              "Every data point has a citation",
+              "Citations reference documents in sourceDocuments list",
+              "Document names, sections, page numbers are valid",
+              "Citations point to content that supports the claim"
+            ]
+          },
+          "crossSlideConsistency": {
+            "description": "Ensure consistency across multiple slides",
+            "checks": [
+              "Same metric reported with same value across slides",
+              "Time periods referenced consistently",
+              "Terminology used consistently (e.g., 'efficiency rate' vs 'efficiency')",
+              "No contradictory statements across slides"
+            ]
+          },
+          "unitValidation": {
+            "description": "Verify units are appropriate and consistent",
+            "checks": [
+              "All numerical values have appropriate units",
+              "Units are consistent for same metric type",
+              "Currency, percentages, indices properly formatted",
+              "Unit conversions are mathematically correct"
+            ]
+          },
+          "calculationVerification": {
+            "description": "Validate mathematical calculations and comparisons",
+            "checks": [
+              "Percentage changes calculated correctly",
+              "QoQ/YoY comparisons mathematically accurate",
+              "Baseline vs current comparisons correct",
+              "Aggregations (sums, averages) are accurate"
+            ]
+          },
+          "sourceAlignment": {
+            "description": "Ensure content aligns with source document intent",
+            "checks": [
+              "Content interpretation aligns with source meaning",
+              "Context from sources not misrepresented",
+              "Conclusions supported by evidence in sources",
+              "No misleading framing of source data"
+            ]
+          }
+        }
+      },
+      "editingMode": {
+        "description": "Targeted validation of edited slides only",
+        "steps": [
+          "1. Identify target slides from editingContext",
+          "2. Perform full validation on edited slides",
+          "3. Check consistency between edited and non-edited slides",
+          "4. Validate new data sources if used in edits",
+          "5. Ensure edits don't introduce contradictions",
+          "6. Compare with previousValidationResults for regression",
+          "7. Return validation results for edited slides only"
+        ],
+        "optimizations": [
+          "Skip validation of unchanged slides",
+          "Focus on edited slide validation and cross-slide consistency",
+          "Check for regressions compared to previous validation",
+          "Validate edits maintain or improve overall quality"
+        ]
+      }
+    },
+
+    "ragEngineUsage": {
+      "description": "Use RAG engine to verify claims not fully covered by queryResults",
+      "whenToQueryRAG": [
+        "When content makes claims not explicitly in queryResults",
+        "When verifying specific numerical values",
+        "When validating contextual interpretations",
+        "When checking for contradictory information in sources"
+      ],
+      "verificationProcess": {
+        "steps": [
+          "1. Identify claim that needs verification",
+          "2. Generate precise verification query",
+          "3. Retrieve relevant chunks from RAG (topK=3, threshold=0.8)",
+          "4. Compare claim against retrieved content",
+          "5. Determine if claim is supported, unsupported, or contradicted",
+          "6. Generate error/warning if issue found"
+        ]
+      }
+    },
+
+    "errorSeverityClassification": {
+      "critical": {
+        "description": "Errors that make content misleading or incorrect",
+        "examples": [
+          "Incorrect numerical values for key metrics",
+          "Factual inaccuracies that change meaning",
+          "Missing citations for major claims",
+          "Mathematical calculation errors"
+        ],
+        "action": "Must be fixed before approval"
+      },
+      "high": {
+        "description": "Significant issues that impact credibility",
+        "examples": [
+          "Unit inconsistencies",
+          "Cross-slide contradictions",
+          "Invalid citations",
+          "Unsupported secondary claims"
+        ],
+        "action": "Should be fixed before approval"
+      },
+      "medium": {
+        "description": "Issues that reduce quality but don't mislead",
+        "examples": [
+          "Missing context for data points",
+          "Formatting inconsistencies",
+          "Incomplete citations (missing page numbers)",
+          "Ambiguous wording"
+        ],
+        "action": "Recommended to fix"
+      },
+      "low": {
+        "description": "Minor issues that don't impact accuracy",
+        "examples": [
+          "Style inconsistencies",
+          "Optional contextual details missing",
+          "Formatting preferences"
+        ],
+        "action": "Optional to fix"
+      }
+    },
+
+    "cycleModes": {
+      "generationMode": {
+        "description": "Validate all slides in newly generated presentation",
+        "activeFields": [
+          "presentationContent (all slides)",
+          "sourceDocuments",
+          "queryResults",
+          "validationRules"
+        ],
+        "ignoredFields": [
+          "editingContext"
+        ],
+        "behavior": "Comprehensive validation of entire presentation, all validation categories active"
+      },
+      "editingMode": {
+        "description": "Validate only edited slides and check consistency",
+        "activeFields": [
+          "presentationContent (edited slides only)",
+          "sourceDocuments",
+          "queryResults (new queries if applicable)",
+          "editingContext"
+        ],
+        "requiredFields": [
+          "editingContext.targetSlidesForValidation"
+        ],
+        "behavior": "Targeted validation of edited slides plus cross-slide consistency checks"
+      }
+    }
+  },
+
+  "rationale": "Best QA and reasoning abilities with Claude-4-Sonnet for detecting errors, inconsistencies, and ensuring data integrity",
+
+  "integrationPoints": {
+    "inputFrom": [
+      "Content Agent (expanded presentation content)",
+      "Query Agent (query results for verification)"
+    ],
+    "handoffAgents": [
+      "Format Agent (if validation passed)",
+      "Content Agent (if major errors require content regeneration)"
+    ],
+    "dataStores": {
+      "ragEngine": "For verification of claims against source documents",
+      "redis": "Cache validation results for editing cycles"
+    }
+  },
+
+  "examples": {
+    "generationModeInput": {
+      "sessionId": "session_789",
+      "userId": "user_456",
+      "qaId": "qa_001",
+      "cycleType": "generation",
+      "presentationContent": {
+        "presentationTitle": "Q3 2024 Operational Performance Review",
+        "totalSlides": 10,
+        "slides": [
+          {
+            "slideNumber": 3,
+            "slideType": "data_slide",
+            "title": "Key Performance Indicators: Q3 2024",
+            "content": {
+              "mainText": "Q3 2024 delivered exceptional performance...",
+              "bulletPoints": [
+                {
+                  "bulletText": "Efficiency Rate reached 87.3% in Q3 2024, surpassing the 85% target...",
+                  "subBullets": [
+                    {
+                      "text": "Quarter-over-quarter improvement of 9.2 percentage points...",
+                      "dataPoint": {
+                        "value": 9.2,
+                        "unit": "percentage points",
+                        "context": "QoQ improvement"
+                      }
+                    }
+                  ],
+                  "dataPoint": {
+                    "metricName": "Efficiency Rate",
+                    "value": 87.3,
+                    "unit": "percent",
+                    "timePeriod": "Q3 2024",
+                    "comparison": "vs Q2 2024: 78.1%",
+                    "sourceQueryId": "query_002"
+                  },
+                  "citation": {
+                    "documentName": "Q3_Operations_Report.pdf",
+                    "sectionName": "Key Performance Indicators",
+                    "pageNumber": "5"
+                  }
+                },
+                {
+                  "bulletText": "Productivity Index climbed to 125.5 in Q3...",
+                  "subBullets": [],
+                  "dataPoint": {
+                    "metricName": "Productivity Index",
+                    "value": 125.5,
+                    "unit": "index",
+                    "timePeriod": "Q3 2024",
+                    "comparison": "vs Q2 2024: 118.2",
+                    "sourceQueryId": "query_002"
+                  },
+                  "citation": {
+                    "documentName": "Q3_Operations_Report.pdf",
+                    "sectionName": "Key Performance Indicators",
+                    "pageNumber": "5"
+                  }
+                }
+              ],
+              "dataVisualizations": [],
+              "citations": []
+            },
+            "speakerNotes": "Walk through each KPI..."
+          }
+        ]
+      },
+      "sourceDocuments": [
+        {
+          "documentId": "doc_001",
+          "documentName": "Q3_Operations_Report.pdf",
+          "docType": "operations_report"
+        }
+      ],
+      "queryResults": [
+        {
+          "queryId": "query_002",
+          "llmEnhancedAnswer": {
+            "answer": "Q3 efficiency rate reached 87.3%, productivity index at 124.5...",
+            "sourceReferences": [
+              {
+                "documentId": "doc_001",
+                "documentName": "Q3_Operations_Report.pdf",
+                "sectionName": "Key Performance Indicators",
+                "snippet": "Q3 2024 KPIs: Efficiency Rate: 87.3%, Productivity Index: 124.5"
+              }
+            ],
+            "extractedData": {
+              "metrics": [
+                {
+                  "metricName": "Efficiency Rate",
+                  "value": 87.3,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024"
+                },
+                {
+                  "metricName": "Productivity Index",
+                  "value": 124.5,
+                  "unit": "index",
+                  "timePeriod": "Q3 2024"
+                }
+              ],
+              "insights": [],
+              "trends": [],
+              "comparisons": []
+            }
+          },
+          "ragRetrieval": {
+            "retrievedChunks": []
+          }
+        }
+      ],
+      "validationRules": {
+        "factualAccuracy": true,
+        "numericalConsistency": true,
+        "citationValidation": true,
+        "crossSlideConsistency": true,
+        "unitValidation": true,
+        "calculationVerification": true,
+        "sourceAlignment": true
+      },
+      "ragEngineAccess": {
+        "enabled": true,
+        "retrievalParams": {
+          "topK": 3,
+          "similarityThreshold": 0.8
+        }
+      },
+      "editingContext": {
+        "isEditing": false,
+        "targetSlidesForValidation": [],
+        "previousValidationResults": null
+      },
+      "timestamp": "2025-10-18T10:35:18Z"
+    },
+
+    "generationModeOutput": {
+      "sessionId": "session_789",
+      "userId": "user_456",
+      "qaId": "qa_001",
+      "cycleType": "generation",
+      "validationResults": {
+        "overallScore": 0.95,
+        "passedValidation": false,
+        "validatedSlides": 10,
+        "totalIssuesFound": 1,
+        "criticalErrors": 1,
+        "numWarnings": 0,
+        "errors": [
+          {
+            "errorId": "error_003_001",
+            "slideNumber": 3,
+            "slideTitle": "Key Performance Indicators: Q3 2024",
+            "errorType": "numerical_inconsistency",
+            "severity": "critical",
+            "location": {
+              "bulletIndex": 1,
+              "subBulletIndex": null,
+              "fieldType": "dataPoint"
+            },
+            "description": "Productivity Index value in content (125.5) does not match source document value (124.5). This is a critical numerical discrepancy.",
+            "currentValue": "125.5",
+            "expectedValue": "124.5",
+            "sourceReference": {
+              "documentName": "Q3_Operations_Report.pdf",
+              "sectionName": "Key Performance Indicators",
+              "snippet": "Q3 2024 KPIs: Productivity Index: 124.5"
+            },
+            "suggestedFix": "Change Productivity Index value from 125.5 to 124.5 to match source document",
+            "autoFixable": true
+          }
+        ],
+        "warnings": [],
+        "validationByCategory": {
+          "factualAccuracy": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          },
+          "numericalConsistency": {
+            "checked": true,
+            "passed": false,
+            "issuesFound": 1,
+            "score": 0.9
+          },
+          "citationValidation": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          },
+          "crossSlideConsistency": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          },
+          "unitValidation": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          },
+          "calculationVerification": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          },
+          "sourceAlignment": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          }
+        },
+        "slideValidationSummary": [
+          {
+            "slideNumber": 1,
+            "slideTitle": "Q3 2024 Operational Performance Review",
+            "passed": true,
+            "score": 1.0,
+            "issuesCount": 0,
+            "criticalErrorsCount": 0
+          },
+          {
+            "slideNumber": 2,
+            "slideTitle": "Executive Summary",
+            "passed": true,
+            "score": 1.0,
+            "issuesCount": 0,
+            "criticalErrorsCount": 0
+          },
+          {
+            "slideNumber": 3,
+            "slideTitle": "Key Performance Indicators: Q3 2024",
+            "passed": false,
+            "score": 0.9,
+            "issuesCount": 1,
+            "criticalErrorsCount": 1
+          }
+        ]
+      },
+      "correctionActions": {
+        "requiresManualReview": false,
+        "autoFixableErrors": 1,
+        "suggestedWorkflow": "minor_corrections",
+        "estimatedCorrectionTime": "1-2 minutes"
+      },
+      "nextAction": "return_to_content_agent",
+      "handoffToAgent": "Content Agent",
+      "timestamp": "2025-10-18T10:35:19Z"
+    },
+
+    "editingModeInput": {
+      "sessionId": "session_790",
+      "userId": "user_456",
+      "qaId": "qa_050",
+      "cycleType": "editing",
+      "presentationContent": {
+        "presentationTitle": "Q3 2024 Operational Performance Review",
+        "totalSlides": 10,
+        "slides": [
+          {
+            "slideNumber": 3,
+            "slideType": "data_slide",
+            "title": "Department Efficiency Breakdown: Q3 2024",
+            "content": {
+              "mainText": "Q3 2024 demonstrated strong efficiency...",
+              "bulletPoints": [
+                {
+                  "bulletText": "Manufacturing achieved 91.2% efficiency...",
+                  "subBullets": [],
+                  "dataPoint": {
+                    "metricName": "Manufacturing Efficiency",
+                    "value": 91.2,
+                    "unit": "percent",
+                    "timePeriod": "Q3 2024",
+                    "comparison": "↑8.5pp from Q2",
+                    "sourceQueryId": "query_050"
+                  },
+                  "citation": {
+                    "documentName": "Q3_Operations_Report.pdf",
+                    "sectionName": "Department Performance",
+                    "pageNumber": "8"
+                  }
+                }
+              ],
+              "dataVisualizations": [],
+              "citations": []
+            },
+            "speakerNotes": "Highlight Manufacturing's leadership..."
+          }
+        ]
+      },
+      "sourceDocuments": [
+        {
+          "documentId": "doc_001",
+          "documentName": "Q3_Operations_Report.pdf",
+          "docType": "operations_report"
+        }
+      ],
+      "queryResults": [
+        {
+          "queryId": "query_050",
+          "llmEnhancedAnswer": {
+            "answer": "Department efficiency breakdown shows Manufacturing at 91.2%...",
+            "sourceReferences": [
+              {
+                "documentId": "doc_001",
+                "documentName": "Q3_Operations_Report.pdf",
+                "sectionName": "Department Performance",
+                "snippet": "Manufacturing: 91.2%"
+              }
+            ],
+            "extractedData": {
+              "metrics": [
+                {
+                  "metricName": "Manufacturing Efficiency",
+                  "value": 91.2,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024"
+                }
+              ],
+              "insights": [],
+              "trends": [],
+              "comparisons": []
+            }
+          },
+          "ragRetrieval": {
+            "retrievedChunks": []
+          }
+        }
+      ],
+      "validationRules": {
+        "factualAccuracy": true,
+        "numericalConsistency": true,
+        "citationValidation": true,
+        "crossSlideConsistency": true,
+        "unitValidation": true,
+        "calculationVerification": true,
+        "sourceAlignment": true
+      },
+      "ragEngineAccess": {
+        "enabled": true,
+        "retrievalParams": {
+          "topK": 3,
+          "similarityThreshold": 0.8
+        }
+      },
+      "editingContext": {
+        "isEditing": true,
+        "targetSlidesForValidation": [3],
+        "previousValidationResults": {
+          "qaId": "qa_001",
+          "validationResults": {
+            "overallScore": 0.98,
+            "passedValidation": true
+          }
+        }
+      },
+      "timestamp": "2025-10-18T11:45:14Z"
+    },
+
+    "editingModeOutput": {
+      "sessionId": "session_790",
+      "userId": "user_456",
+      "qaId": "qa_050",
+      "cycleType": "editing",
+      "validationResults": {
+        "overallScore": 1.0,
+        "passedValidation": true,
+        "validatedSlides": 1,
+        "totalIssuesFound": 0,
+        "criticalErrors": 0,
+        "numWarnings": 0,
+        "errors": [],
+        "warnings": [],
+        "validationByCategory": {
+          "factualAccuracy": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          },
+          "numericalConsistency": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          },
+          "citationValidation": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          },
+          "crossSlideConsistency": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          },
+          "unitValidation": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          },
+          "calculationVerification": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          },
+          "sourceAlignment": {
+            "checked": true,
+            "passed": true,
+            "issuesFound": 0,
+            "score": 1.0
+          }
+        },
+        "slideValidationSummary": [
+          {
+            "slideNumber": 3,
+            "slideTitle": "Department Efficiency Breakdown: Q3 2024",
+            "passed": true,
+            "score": 1.0,
+            "issuesCount": 0,
+            "criticalErrorsCount": 0
+          }
+        ]
+      },
+      "correctionActions": {
+        "requiresManualReview": false,
+        "autoFixableErrors": 0,
+        "suggestedWorkflow": "approve",
+        "estimatedCorrectionTime": "0 minutes"
+      },
+      "nextAction": "proceed_to_format_agent",
+      "handoffToAgent": "Format Agent",
+      "timestamp": "2025-10-18T11:45:15Z"
+    }
+  }
+}

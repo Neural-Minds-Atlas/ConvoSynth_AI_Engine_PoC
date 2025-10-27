@@ -1,0 +1,1142 @@
+{
+  "agentName": "Content Agent",
+  "primaryFunction": "Generate comprehensive slide content by expanding outline with RAG-retrieved context, maintaining data accuracy and source attribution for both generation and editing cycles",
+  "llmSelection": "Claude-4-Sonnet",
+  "performanceTargets": {
+    "responseTime": "<4s per slide",
+    "accuracyTarget": "95% data accuracy",
+    "contentQuality": "90% coherence and clarity"
+  },
+  "dataFlow": {
+    "inputSchema": {
+      "sessionId": "string",
+      "userId": "string",
+      "contentId": "string",
+      "cycleType": "enum: ['generation', 'editing']",
+      "presentationOutline": {
+        "title": "string",
+        "subtitle": "string or null",
+        "totalSlides": "number",
+        "slides": [
+          {
+            "slideNumber": "number",
+            "slideType": "string",
+            "title": "string",
+            "bulletPoints": [
+              {
+                "bulletText": "string",
+                "subBullets": ["array of strings or null"],
+                "requiresData": "boolean",
+                "dataMapping": {
+                  "queryId": "string or null",
+                  "metricName": "string or null",
+                  "dataType": "string or null"
+                }
+              }
+            ],
+            "visualHints": ["array of visual hint objects"],
+            "speakerNotes": "string or null",
+            "keyMessage": "string"
+          }
+        ]
+      },
+      "queryResults": [
+        {
+          "queryId": "string",
+          "llmEnhancedAnswer": {
+            "answer": "string",
+            "confidence": "number",
+            "sourceReferences": [
+              {
+                "documentId": "string",
+                "documentName": "string",
+                "sectionName": "string",
+                "snippet": "string"
+              }
+            ],
+            "extractedData": {
+              "metrics": ["array of metric objects"],
+              "insights": ["array of strings"],
+              "trends": ["array of strings"],
+              "comparisons": ["array of comparison objects"]
+            }
+          },
+          "ragRetrieval": {
+            "retrievedChunks": [
+              {
+                "chunkId": "string",
+                "documentId": "string",
+                "documentName": "string",
+                "sectionName": "string",
+                "content": "string",
+                "relevanceScore": "number"
+              }
+            ]
+          }
+        }
+      ],
+      "contentRequirements": {
+        "detailLevel": "enum: ['executive_summary', 'detailed', 'comprehensive'] (default: 'detailed')",
+        "tone": "string (e.g., 'professional', 'casual', 'technical')",
+        "includeDataPoints": "boolean (default: true)",
+        "includeCitations": "boolean (default: true)",
+        "expandBullets": "boolean (default: true)",
+        "maxWordsPerBullet": "number (default: 25)",
+        "includeContextualExplanations": "boolean (default: true)"
+      },
+      "ragEngineAccess": {
+        "description": "Direct access to RAG engine for additional context retrieval if needed",
+        "enabled": "boolean (default: true)",
+        "retrievalParams": {
+          "topK": "number (default: 5)",
+          "similarityThreshold": "number (default: 0.7)"
+        }
+      },
+      "editingContext": {
+        "isEditing": "boolean",
+        "previousContent": {
+          "contentId": "string or null",
+          "slides": [
+            {
+              "slideNumber": "number",
+              "title": "string",
+              "content": {
+                "mainText": "string",
+                "bulletPoints": ["array of content bullet objects"],
+                "dataVisualizations": ["array of data viz objects"],
+                "citations": ["array of citation objects"]
+              },
+              "speakerNotes": "string"
+            }
+          ]
+        },
+        "targetSlidesForEdit": ["array of slide numbers to regenerate"],
+        "preserveOtherSlides": "boolean (default: true)"
+      },
+      "timestamp": "string (ISO 8601)"
+    },
+
+    "outputSchema": {
+      "sessionId": "string",
+      "userId": "string",
+      "contentId": "string",
+      "cycleType": "enum: ['generation', 'editing']",
+      "expandedContent": {
+        "presentationTitle": "string",
+        "presentationSubtitle": "string or null",
+        "totalSlides": "number",
+        "slides": [
+          {
+            "slideNumber": "number",
+            "slideType": "string",
+            "title": "string",
+            "content": {
+              "mainText": "string (2-3 sentence summary of slide key message)",
+              "bulletPoints": [
+                {
+                  "bulletText": "string (full expanded bullet point content)",
+                  "subBullets": [
+                    {
+                      "text": "string",
+                      "dataPoint": {
+                        "value": "string or number or null",
+                        "unit": "string or null",
+                        "context": "string or null"
+                      }
+                    }
+                  ],
+                  "dataPoint": {
+                    "metricName": "string or null",
+                    "value": "string or number or null",
+                    "unit": "string or null",
+                    "timePeriod": "string or null",
+                    "comparison": "string or null",
+                    "sourceQueryId": "string or null"
+                  },
+                  "citation": {
+                    "documentName": "string or null",
+                    "sectionName": "string or null",
+                    "pageNumber": "string or null"
+                  }
+                }
+              ],
+              "dataVisualizations": [
+                {
+                  "visualizationId": "string",
+                  "visualType": "string (e.g., 'bar_chart', 'line_chart', 'table')",
+                  "title": "string",
+                  "data": {
+                    "labels": ["array of strings"],
+                    "datasets": [
+                      {
+                        "label": "string",
+                        "values": ["array of numbers"],
+                        "metadata": "object or null"
+                      }
+                    ]
+                  },
+                  "sourceQueryIds": ["array of query IDs"],
+                  "chartConfiguration": {
+                    "xAxisLabel": "string or null",
+                    "yAxisLabel": "string or null",
+                    "colorScheme": "string or null"
+                  }
+                }
+              ],
+              "citations": [
+                {
+                  "citationId": "string",
+                  "documentName": "string",
+                  "sectionName": "string",
+                  "pageNumber": "string or null",
+                  "relevantTo": "string (which bullet point or data this cites)"
+                }
+              ],
+              "contextualNotes": "string or null (additional context for complex slides)"
+            },
+            "speakerNotes": "string (detailed notes for presenter, 3-5 sentences)",
+            "transitionHint": "string or null (suggested transition to next slide)"
+          }
+        ]
+      },
+      "contentMetadata": {
+        "totalDataPoints": "number",
+        "totalCitations": "number",
+        "queriesUsed": ["array of query IDs used in content generation"],
+        "ragRetrievalCount": "number (additional RAG calls made beyond queryResults)",
+        "editingMetadata": {
+          "slidesRegenerated": ["array of slide numbers regenerated"],
+          "slidesPreserved": ["array of slide numbers preserved from previous"],
+          "contentChangeSummary": "string or null"
+        }
+      },
+      "qualityMetrics": {
+        "dataAccuracy": "number (0.0-1.0, based on source alignment)",
+        "contentCoherence": "number (0.0-1.0, narrative flow quality)",
+        "citationCompleteness": "number (0.0-1.0, % of data claims cited)",
+        "detailLevel": "enum: ['executive_summary', 'detailed', 'comprehensive']"
+      },
+      "validationChecks": {
+        "allDataPointsSourced": "boolean",
+        "allMetricsHaveUnits": "boolean",
+        "citationsComplete": "boolean",
+        "bulletPointLengthCompliant": "boolean",
+        "noContradictions": "boolean"
+      },
+      "nextAction": "enum: ['proceed_to_qa_agent', 'refinement_needed', 'data_validation_required']",
+      "handoffToAgent": "string or null",
+      "timestamp": "string (ISO 8601)"
+    },
+
+    "contentGenerationLogic": {
+      "generationMode": {
+        "description": "Generate comprehensive content for all slides from outline",
+        "steps": [
+          "1. Process each slide in the outline sequentially",
+          "2. For each bullet point, retrieve corresponding data from queryResults using dataMapping",
+          "3. If requiresData=true, extract specific metrics/insights from query results",
+          "4. Expand bullet points with contextual information and explanations",
+          "5. Generate sub-bullets with supporting details and data points",
+          "6. Create mainText summarizing the slide's key message",
+          "7. Add citations for all data-backed claims",
+          "8. Prepare data visualizations based on visualHints",
+          "9. Generate comprehensive speaker notes",
+          "10. Add transition hints for slide flow"
+        ],
+        "bulletExpansionStrategy": {
+          "concise": "Keep bullets short (15-20 words), data-focused",
+          "detailed": "Expand with context (20-25 words), include explanations",
+          "comprehensive": "Full explanations (25-30 words), rich context"
+        },
+        "dataIntegrationStrategy": {
+          "metrics": "Embed metric values with units and context directly in bullet text",
+          "comparisons": "Present baseline, current, and change clearly with percentage or absolute changes",
+          "trends": "Describe trend direction and magnitude with supporting data",
+          "insights": "Connect data to implications and actionable takeaways"
+        }
+      },
+      "editingMode": {
+        "description": "Regenerate content for specific slides based on edit requirements",
+        "steps": [
+          "1. Identify target slides from editingContext.targetSlidesForEdit",
+          "2. Preserve content for non-target slides from previousContent",
+          "3. For target slides, regenerate content using updated outline and query results",
+          "4. Ensure consistency with preserved slides (terminology, style, formatting)",
+          "5. Maintain narrative flow and transitions around edited slides",
+          "6. Update citations if new data sources used",
+          "7. Validate no contradictions with preserved content"
+        ],
+        "optimizations": [
+          "Reuse unchanged content to minimize regeneration time",
+          "Only query RAG engine if new data needed beyond existing queryResults",
+          "Maintain consistent voice and style across edited and preserved content",
+          "Update cross-references if slide numbers or content changed"
+        ]
+      }
+    },
+
+    "ragEngineUsage": {
+      "description": "Strategy for using RAG engine beyond provided queryResults",
+      "whenToUseRAG": [
+        "When bullet point requires data not in queryResults",
+        "When additional context needed for clarity",
+        "When specific examples or details requested",
+        "When cross-referencing between documents needed"
+      ],
+      "ragQueryGeneration": {
+        "bulletPointBased": "Generate targeted query from bullet text and dataMapping",
+        "contextEnrichment": "Query for supporting details to expand understanding",
+        "exampleRetrieval": "Fetch specific examples or case studies from documents"
+      },
+      "ragResultIntegration": {
+        "steps": [
+          "1. Generate focused query based on bullet point needs",
+          "2. Retrieve top-k relevant chunks from RAG engine",
+          "3. Extract specific information (metrics, facts, examples)",
+          "4. Integrate into bullet point content seamlessly",
+          "5. Add citation for retrieved information"
+        ]
+      }
+    },
+
+    "dataVisualizationPreparation": {
+      "description": "Prepare structured data for charts and visualizations",
+      "chartTypes": {
+        "bar_chart": {
+          "useCase": "Comparing metrics across categories or time periods",
+          "dataStructure": {
+            "labels": ["array of category names or time periods"],
+            "datasets": [{"label": "metric name", "values": ["array of numbers"]}]
+          }
+        },
+        "line_chart": {
+          "useCase": "Showing trends over time",
+          "dataStructure": {
+            "labels": ["array of time periods"],
+            "datasets": [{"label": "metric name", "values": ["array of numbers"]}]
+          }
+        },
+        "pie_chart": {
+          "useCase": "Showing composition or distribution",
+          "dataStructure": {
+            "labels": ["array of segment names"],
+            "datasets": [{"values": ["array of percentages or absolute values"]}]
+          }
+        },
+        "table": {
+          "useCase": "Detailed data presentation with multiple dimensions",
+          "dataStructure": {
+            "headers": ["array of column names"],
+            "rows": [["array of values per row"]]
+          }
+        }
+      },
+      "dataExtractionStrategy": {
+        "fromQueryResults": "Extract metrics, trends, comparisons from extractedData",
+        "fromRAGRetrieval": "Parse numerical data from retrieved chunks if not in queryResults",
+        "aggregation": "Combine data from multiple queries if needed for comprehensive visualization"
+      }
+    },
+
+    "cycleModes": {
+      "generationMode": {
+        "description": "Generate content for all slides in presentation",
+        "activeFields": [
+          "presentationOutline",
+          "queryResults",
+          "contentRequirements"
+        ],
+        "ignoredFields": [
+          "editingContext"
+        ],
+        "behavior": "Process all slides, generate comprehensive content with data integration and citations"
+      },
+      "editingMode": {
+        "description": "Regenerate content for specific edited slides",
+        "activeFields": [
+          "presentationOutline (updated slides only)",
+          "queryResults (new queries if applicable)",
+          "editingContext"
+        ],
+        "requiredFields": [
+          "editingContext.previousContent",
+          "editingContext.targetSlidesForEdit"
+        ],
+        "behavior": "Regenerate only target slides, preserve others, maintain consistency and narrative flow"
+      }
+    }
+  },
+
+  "rationale": "Superior analytical and content writing capabilities with Claude-4-Sonnet for accurate, coherent, and well-sourced presentation content",
+
+  "integrationPoints": {
+    "inputFrom": [
+      "Outline Agent (presentation outline with data mappings)",
+      "Query Agent (LLM-enhanced answers and RAG retrieval results)"
+    ],
+    "handoffAgents": [
+      "QA Agent (for content validation and accuracy checking)",
+      "Image Coordination Agent (if new visualizations needed based on content)"
+    ],
+    "dataStores": {
+      "ragEngine": "Direct access for additional context retrieval beyond queryResults",
+      "redis": "Cache generated content for editing and version history"
+    }
+  },
+
+  "examples": {
+    "generationModeInput": {
+      "sessionId": "session_789",
+      "userId": "user_456",
+      "contentId": "content_001",
+      "cycleType": "generation",
+      "presentationOutline": {
+        "title": "Q3 2024 Operational Performance Review",
+        "subtitle": "Efficiency Gains and Strategic Opportunities",
+        "totalSlides": 10,
+        "slides": [
+          {
+            "slideNumber": 3,
+            "slideType": "data_slide",
+            "title": "Key Performance Indicators: Q3 2024",
+            "bulletPoints": [
+              {
+                "bulletText": "Efficiency Rate: 87.3% (Target: 85%)",
+                "subBullets": [
+                  "9.2 percentage point improvement from Q2 (78.1%)",
+                  "Exceeded target by 2.3 percentage points"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_002",
+                  "metricName": "Efficiency Rate",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Productivity Index: 124.5 (Baseline: 100)",
+                "subBullets": [
+                  "5.3% increase from Q2 (118.2)",
+                  "24.5% above baseline performance"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_002",
+                  "metricName": "Productivity Index",
+                  "dataType": "metric"
+                }
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "chart",
+                "chartType": "bar",
+                "dataSource": "query_002",
+                "purpose": "Compare Q3 vs Q2 KPIs"
+              }
+            ],
+            "speakerNotes": "Walk through each KPI, emphasizing QoQ improvements",
+            "keyMessage": "All key metrics exceeded targets"
+          }
+        ]
+      },
+      "queryResults": [
+        {
+          "queryId": "query_002",
+          "llmEnhancedAnswer": {
+            "answer": "Q3 efficiency rate reached 87.3%, productivity index at 124.5...",
+            "confidence": 0.98,
+            "sourceReferences": [
+              {
+                "documentId": "doc_001",
+                "documentName": "Q3_Operations_Report.pdf",
+                "sectionName": "Key Performance Indicators",
+                "snippet": "Q3 2024 KPIs: Efficiency Rate: 87.3%, Productivity Index: 124.5"
+              }
+            ],
+            "extractedData": {
+              "metrics": [
+                {
+                  "metricName": "Efficiency Rate",
+                  "value": 87.3,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024",
+                  "sourceDocument": "Q3_Operations_Report.pdf"
+                },
+                {
+                  "metricName": "Efficiency Rate",
+                  "value": 78.1,
+                  "unit": "percent",
+                  "timePeriod": "Q2 2024",
+                  "sourceDocument": "Q2_Operations_Report.pdf"
+                },
+                {
+                  "metricName": "Productivity Index",
+                  "value": 124.5,
+                  "unit": "index",
+                  "timePeriod": "Q3 2024",
+                  "sourceDocument": "Q3_Operations_Report.pdf"
+                },
+                {
+                  "metricName": "Productivity Index",
+                  "value": 118.2,
+                  "unit": "index",
+                  "timePeriod": "Q2 2024",
+                  "sourceDocument": "Q2_Operations_Report.pdf"
+                }
+              ],
+              "insights": [
+                "Q3 efficiency rate exceeded target by 2.3 percentage points"
+              ],
+              "trends": [
+                "Consistent upward efficiency trend from Q2 to Q3"
+              ],
+              "comparisons": [
+                {
+                  "comparisonType": "QoQ",
+                  "baseline": 78.1,
+                  "current": 87.3,
+                  "change": "+9.2 pp",
+                  "percentChange": 11.8
+                }
+              ]
+            }
+          },
+          "ragRetrieval": {
+            "retrievedChunks": [
+              {
+                "chunkId": "chunk_001_15",
+                "documentId": "doc_001",
+                "documentName": "Q3_Operations_Report.pdf",
+                "sectionName": "Key Performance Indicators",
+                "content": "Q3 2024 KPIs: Efficiency Rate: 87.3% (target: 85%), Productivity Index: 124.5 (baseline: 100)",
+                "relevanceScore": 0.98
+              }
+            ]
+          }
+        }
+      ],
+      "contentRequirements": {
+        "detailLevel": "detailed",
+        "tone": "professional",
+        "includeDataPoints": true,
+        "includeCitations": true,
+        "expandBullets": true,
+        "maxWordsPerBullet": 25,
+        "includeContextualExplanations": true
+      },
+      "ragEngineAccess": {
+        "enabled": true,
+        "retrievalParams": {
+          "topK": 5,
+          "similarityThreshold": 0.7
+        }
+      },
+      "editingContext": {
+        "isEditing": false,
+        "previousContent": null,
+        "targetSlidesForEdit": [],
+        "preserveOtherSlides": true
+      },
+      "timestamp": "2025-10-18T10:35:12Z"
+    },
+
+    "generationModeOutput": {
+      "sessionId": "session_789",
+      "userId": "user_456",
+      "contentId": "content_001",
+      "cycleType": "generation",
+      "expandedContent": {
+        "presentationTitle": "Q3 2024 Operational Performance Review",
+        "presentationSubtitle": "Efficiency Gains and Strategic Opportunities",
+        "totalSlides": 10,
+        "slides": [
+          {
+            "slideNumber": 3,
+            "slideType": "data_slide",
+            "title": "Key Performance Indicators: Q3 2024",
+            "content": {
+              "mainText": "Q3 2024 delivered exceptional performance across all key operational metrics, with efficiency and productivity reaching record levels while exceeding established targets.",
+              "bulletPoints": [
+                {
+                  "bulletText": "Efficiency Rate reached 87.3% in Q3 2024, surpassing the 85% target by 2.3 percentage points and representing an 11.8% improvement over Q2's 78.1%",
+                  "subBullets": [
+                    {
+                      "text": "Quarter-over-quarter improvement of 9.2 percentage points demonstrates accelerating operational excellence",
+                      "dataPoint": {
+                        "value": 9.2,
+                        "unit": "percentage points",
+                        "context": "QoQ improvement"
+                      }
+                    },
+                    {
+                      "text": "Target achievement of 102.7% reflects strong execution against strategic objectives",
+                      "dataPoint": {
+                        "value": 102.7,
+                        "unit": "percent",
+                        "context": "vs. 85% target"
+                      }
+                    }
+                  ],
+                  "dataPoint": {
+                    "metricName": "Efficiency Rate",
+                    "value": 87.3,
+                    "unit": "percent",
+                    "timePeriod": "Q3 2024",
+                    "comparison": "vs Q2 2024: 78.1%",
+                    "sourceQueryId": "query_002"
+                  },
+                  "citation": {
+                    "documentName": "Q3_Operations_Report.pdf",
+                    "sectionName": "Key Performance Indicators",
+                    "pageNumber": "5"
+                  }
+                },
+                {
+                  "bulletText": "Productivity Index climbed to 124.5 in Q3, marking a 5.3% increase from Q2's 118.2 and demonstrating 24.5% performance above the established baseline",
+                  "subBullets": [
+                    {
+                      "text": "Sustained productivity growth indicates successful implementation of process optimization initiatives",
+                      "dataPoint": {
+                        "value": 6.3,
+                        "unit": "index points",
+                        "context": "QoQ increase"
+                      }
+                    },
+                    {
+                      "text": "Performance significantly exceeds baseline by nearly 25%, validating strategic investments in operational capabilities",
+                      "dataPoint": {
+                        "value": 24.5,
+                        "unit": "percent",
+                        "context": "above baseline 100"
+                      }
+                    }
+                  ],
+                  "dataPoint": {
+                    "metricName": "Productivity Index",
+                    "value": 124.5,
+                    "unit": "index",
+                    "timePeriod": "Q3 2024",
+                    "comparison": "vs Q2 2024: 118.2",
+                    "sourceQueryId": "query_002"
+                  },
+                  "citation": {
+                    "documentName": "Q3_Operations_Report.pdf",
+                    "sectionName": "Key Performance Indicators",
+                    "pageNumber": "5"
+                  }
+                },
+                {
+                  "bulletText": "Cost per Unit decreased to $45.20 in Q3, achieving an 8% reduction from Q2's $49.10 and demonstrating effective cost management alongside productivity gains",
+                  "subBullets": [
+                    {
+                      "text": "Cost reduction of $3.90 per unit delivers significant operational savings while maintaining quality standards",
+                      "dataPoint": {
+                        "value": 3.90,
+                        "unit": "USD",
+                        "context": "per unit savings"
+                      }
+                    },
+                    {
+                      "text": "Rare achievement of simultaneous cost reduction and productivity improvement validates operational strategy",
+                      "dataPoint": null
+                    }
+                  ],
+                  "dataPoint": {
+                    "metricName": "Cost per Unit",
+                    "value": 45.20,
+                    "unit": "USD",
+                    "timePeriod": "Q3 2024",
+                    "comparison": "vs Q2 2024: $49.10",
+                    "sourceQueryId": "query_002"
+                  },
+                  "citation": {
+                    "documentName": "Q3_Operations_Report.pdf",
+                    "sectionName": "Key Performance Indicators",
+                    "pageNumber": "5"
+                  }
+                }
+              ],
+              "dataVisualizations": [
+                {
+                  "visualizationId": "viz_003_001",
+                  "visualType": "bar_chart",
+                  "title": "Q2 vs Q3 2024 KPI Comparison",
+                  "data": {
+                    "labels": ["Efficiency Rate (%)", "Productivity Index", "Cost per Unit ($)"],
+                    "datasets": [
+                      {
+                        "label": "Q2 2024",
+                        "values": [78.1, 118.2, 49.10],
+                        "metadata": {"color": "#6B7280"}
+                      },
+                      {
+                        "label": "Q3 2024",
+                        "values": [87.3, 124.5, 45.20],
+                        "metadata": {"color": "#10B981"}
+                      }
+                    ]
+                  },
+                  "sourceQueryIds": ["query_002"],
+                  "chartConfiguration": {
+                    "xAxisLabel": "Key Performance Indicators",
+                    "yAxisLabel": "Values",
+                    "colorScheme": "blue-green"
+                  }
+                }
+              ],
+              "citations": [
+                {
+                  "citationId": "cite_003_001",
+                  "documentName": "Q3_Operations_Report.pdf",
+                  "sectionName": "Key Performance Indicators",
+                  "pageNumber": "5",
+                  "relevantTo": "All KPI values (Efficiency Rate, Productivity Index, Cost per Unit)"
+                },
+                {
+                  "citationId": "cite_003_002",
+                  "documentName": "Q2_Operations_Report.pdf",
+                  "sectionName": "Key Performance Indicators",
+                  "pageNumber": "5",
+                  "relevantTo": "Q2 baseline values for comparison"
+                }
+              ],
+              "contextualNotes": "These KPIs demonstrate the operational team's ability to simultaneously improve efficiency and productivity while reducing costs—a rare trifecta that validates the effectiveness of Q3 strategic initiatives and process optimization efforts."
+            },
+            "speakerNotes": "Walk through each KPI methodically, emphasizing the quarter-over-quarter improvements. Highlight that exceeding the efficiency target by 2.3 percentage points demonstrates strong execution. Note the particularly impressive achievement of improving productivity while reducing costs—typically these move in opposite directions. Use the visualization to show the clear upward trend in efficiency and productivity alongside the favorable downward trend in costs. Prepare to address questions about sustainability of these improvements and plans for Q4.",
+            "transitionHint": "With these strong Q3 KPIs established, let's examine how they compare to our Q2 performance and understand the trends driving these improvements..."
+          }
+        ]
+      },
+      "contentMetadata": {
+        "totalDataPoints": 9,
+        "totalCitations": 2,
+        "queriesUsed": ["query_002"],
+        "ragRetrievalCount": 0,
+        "editingMetadata": null
+      },
+      "qualityMetrics": {
+        "dataAccuracy": 0.98,
+        "contentCoherence": 0.94,
+        "citationCompleteness": 1.0,
+        "detailLevel": "detailed"
+      },
+      "validationChecks": {
+        "allDataPointsSourced": true,
+        "allMetricsHaveUnits": true,
+        "citationsComplete": true,
+        "bulletPointLengthCompliant": true,
+        "noContradictions": true
+      },
+      "nextAction": "proceed_to_qa_agent",
+      "handoffToAgent": "QA Agent",
+      "timestamp": "2025-10-18T10:35:16Z"
+    },
+
+    "editingModeInput": {
+      "sessionId": "session_790",
+      "userId": "user_456",
+      "contentId": "content_050",
+      "cycleType": "editing",
+      "presentationOutline": {
+        "title": "Q3 2024 Operational Performance Review",
+        "subtitle": "Efficiency Gains and Strategic Opportunities",
+        "totalSlides": 10,
+        "slides": [
+          {
+            "slideNumber": 3,
+            "slideType": "data_slide",
+            "title": "Department Efficiency Breakdown: Q3 2024",
+            "bulletPoints": [
+              {
+                "bulletText": "Manufacturing: 91.2% (↑8.5pp from Q2)",
+                "subBullets": [
+                  "Highest efficiency across all departments",
+                  "Driven by new automation protocols"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_050",
+                  "metricName": "Manufacturing Efficiency",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Quality Control: 89.8% (↑5.1pp from Q2)",
+                "subBullets": [
+                  "Strong performance maintaining quality standards"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_050",
+                  "metricName": "Quality Control Efficiency",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Logistics: 85.4% (↑6.2pp from Q2)",
+                "subBullets": [
+                  "Route optimization showing measurable impact"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_050",
+                  "metricName": "Logistics Efficiency",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Maintenance: 82.7% (↑4.8pp from Q2)",
+                "subBullets": [
+                  "Steady improvement in preventive maintenance"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_050",
+                  "metricName": "Maintenance Efficiency",
+                  "dataType": "metric"
+                }
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "chart",
+                "chartType": "bar",
+                "dataSource": "query_050",
+                "purpose": "Compare department efficiency rates"
+              }
+            ],
+            "speakerNotes": "Highlight Manufacturing's leadership",
+            "keyMessage": "All departments achieved efficiency improvements"
+          }
+        ]
+      },
+      "queryResults": [
+        {
+          "queryId": "query_050",
+          "llmEnhancedAnswer": {
+            "answer": "Department efficiency breakdown shows Manufacturing at 91.2%, Quality Control at 89.8%...",
+            "confidence": 0.96,
+            "sourceReferences": [
+              {
+                "documentId": "doc_001",
+                "documentName": "Q3_Operations_Report.pdf",
+                "sectionName": "Department Performance",
+                "snippet": "Department Efficiency Breakdown Q3 2024: Manufacturing: 91.2%, Logistics: 85.4%, Quality Control: 89.8%, Maintenance: 82.7%"
+              }
+            ],
+            "extractedData": {
+              "metrics": [
+                {
+                  "metricName": "Manufacturing Efficiency",
+                  "value": 91.2,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024",
+                  "sourceDocument": "Q3_Operations_Report.pdf"
+                },
+                {
+                  "metricName": "Logistics Efficiency",
+                  "value": 85.4,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024",
+                  "sourceDocument": "Q3_Operations_Report.pdf"
+                },
+                {
+                  "metricName": "Quality Control Efficiency",
+                  "value": 89.8,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024",
+                  "sourceDocument": "Q3_Operations_Report.pdf"
+                },
+                {
+                  "metricName": "Maintenance Efficiency",
+                  "value": 82.7,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024",
+                  "sourceDocument": "Q3_Operations_Report.pdf"
+                }
+              ],
+              "insights": [
+                "Manufacturing led improvements across departments",
+                "All departments improved QoQ by 4.8pp to 8.5pp"
+              ],
+              "trends": [],
+              "comparisons": []
+            }
+          },
+          "ragRetrieval": {
+            "retrievedChunks": [
+              {
+                "chunkId": "chunk_001_22",
+                "documentId": "doc_001",
+                "documentName": "Q3_Operations_Report.pdf",
+                "sectionName": "Department Performance",
+                "content": "Department Efficiency Breakdown Q3 2024: Manufacturing: 91.2% (↑8.5pp from Q2), Logistics: 85.4% (↑6.2pp), Quality Control: 89.8% (↑5.1pp), Maintenance: 82.7% (↑4.8pp)",
+                "relevanceScore": 0.96
+              }
+            ]
+          }
+        }
+      ],
+      "contentRequirements": {
+        "detailLevel": "detailed",
+        "tone": "professional",
+        "includeDataPoints": true,
+        "includeCitations": true,
+        "expandBullets": true,
+        "maxWordsPerBullet": 25,
+        "includeContextualExplanations": true
+      },
+      "ragEngineAccess": {
+        "enabled": true,
+        "retrievalParams": {
+          "topK": 5,
+          "similarityThreshold": 0.7
+        }
+      },
+      "editingContext": {
+        "isEditing": true,
+        "previousContent": {
+          "contentId": "content_001",
+          "slides": [
+            {
+              "slideNumber": 1,
+              "title": "Q3 2024 Operational Performance Review",
+              "content": {
+                "mainText": "Title slide content...",
+                "bulletPoints": [],
+                "dataVisualizations": [],
+                "citations": []
+              },
+              "speakerNotes": "Welcome and introduction"
+            },
+            {
+              "slideNumber": 2,
+              "title": "Executive Summary: Q3 Highlights",
+              "content": {
+                "mainText": "Q3 demonstrated exceptional performance...",
+                "bulletPoints": [],
+                "dataVisualizations": [],
+                "citations": []
+              },
+              "speakerNotes": "Overview of Q3 achievements"
+            }
+          ]
+        },
+        "targetSlidesForEdit": [3],
+        "preserveOtherSlides": true
+      },
+      "timestamp": "2025-10-18T11:45:08Z"
+    },
+
+    "editingModeOutput": {
+      "sessionId": "session_790",
+      "userId": "user_456",
+      "contentId": "content_050",
+      "cycleType": "editing",
+      "expandedContent": {
+        "presentationTitle": "Q3 2024 Operational Performance Review",
+        "presentationSubtitle": "Efficiency Gains and Strategic Opportunities",
+        "totalSlides": 10,
+        "slides": [
+          {
+            "slideNumber": 1,
+            "slideType": "title_slide",
+            "title": "Q3 2024 Operational Performance Review",
+            "content": {
+              "mainText": "Title slide content...",
+              "bulletPoints": [],
+              "dataVisualizations": [],
+              "citations": [],
+              "contextualNotes": null
+            },
+            "speakerNotes": "Welcome and introduction",
+            "transitionHint": null
+          },
+          {
+            "slideNumber": 2,
+            "slideType": "overview_slide",
+            "title": "Executive Summary: Q3 Highlights",
+            "content": {
+              "mainText": "Q3 demonstrated exceptional performance...",
+              "bulletPoints": [],
+              "dataVisualizations": [],
+              "citations": [],
+              "contextualNotes": null
+            },
+            "speakerNotes": "Overview of Q3 achievements",
+            "transitionHint": null
+          },
+          {
+            "slideNumber": 3,
+            "slideType": "data_slide",
+            "title": "Department Efficiency Breakdown: Q3 2024",
+            "content": {
+              "mainText": "Q3 2024 demonstrated strong efficiency performance across all operational departments, with every team achieving meaningful quarter-over-quarter improvements ranging from 4.8 to 8.5 percentage points.",
+              "bulletPoints": [
+                {
+                  "bulletText": "Manufacturing achieved 91.2% efficiency in Q3, representing an 8.5 percentage point improvement from Q2 and establishing the highest efficiency rate across all departments",
+                  "subBullets": [
+                    {
+                      "text": "Industry-leading efficiency reflects successful implementation of new automation protocols that streamlined production workflows",
+                      "dataPoint": null
+                    },
+                    {
+                      "text": "Strong performance positions Manufacturing as the benchmark for other departments to target",
+                      "dataPoint": {
+                        "value": 91.2,
+                        "unit": "percent",
+                        "context": "department-leading efficiency"
+                      }
+                    }
+                  ],
+                  "dataPoint": {
+                    "metricName": "Manufacturing Efficiency",
+                    "value": 91.2,
+                    "unit": "percent",
+                    "timePeriod": "Q3 2024",
+                    "comparison": "↑8.5pp from Q2",
+                    "sourceQueryId": "query_050"
+                  },
+                  "citation": {
+                    "documentName": "Q3_Operations_Report.pdf",
+                    "sectionName": "Department Performance",
+                    "pageNumber": "8"
+                  }
+                },
+                {
+                  "bulletText": "Quality Control reached 89.8% efficiency in Q3, improving by 5.1 percentage points from Q2 while maintaining rigorous quality standards",
+                  "subBullets": [
+                    {
+                      "text": "Impressive efficiency gains achieved without compromising the department's primary mission of ensuring product quality",
+                      "dataPoint": null
+                    }
+                  ],
+                  "dataPoint": {
+                    "metricName": "Quality Control Efficiency",
+                    "value": 89.8,
+                    "unit": "percent",
+                    "timePeriod": "Q3 2024",
+                    "comparison": "↑5.1pp from Q2",
+                    "sourceQueryId": "query_050"
+                  },
+                  "citation": {
+                    "documentName": "Q3_Operations_Report.pdf",
+                    "sectionName": "Department Performance",
+                    "pageNumber": "8"
+                  }
+                },
+                {
+                  "bulletText": "Logistics improved to 85.4% efficiency in Q3, demonstrating a 6.2 percentage point gain from Q2 driven by route optimization initiatives",
+                  "subBullets": [
+                    {
+                      "text": "Route optimization technology delivered measurable results in reducing delivery times and improving resource utilization",
+                      "dataPoint": null
+                    }
+                  ],
+                  "dataPoint": {
+                    "metricName": "Logistics Efficiency",
+                    "value": 85.4,
+                    "unit": "percent",
+                    "timePeriod": "Q3 2024",
+                    "comparison": "↑6.2pp from Q2",
+                    "sourceQueryId": "query_050"
+                  },
+                  "citation": {
+                    "documentName": "Q3_Operations_Report.pdf",
+                    "sectionName": "Department Performance",
+                    "pageNumber": "8"
+                  }
+                },
+                {
+                  "bulletText": "Maintenance achieved 82.7% efficiency in Q3, showing steady improvement of 4.8 percentage points from Q2 through enhanced preventive maintenance practices",
+                  "subBullets": [
+                    {
+                      "text": "Preventive maintenance focus is reducing unplanned downtime and improving overall equipment effectiveness",
+                      "dataPoint": null
+                    }
+                  ],
+                  "dataPoint": {
+                    "metricName": "Maintenance Efficiency",
+                    "value": 82.7,
+                    "unit": "percent",
+                    "timePeriod": "Q3 2024",
+                    "comparison": "↑4.8pp from Q2",
+                    "sourceQueryId": "query_050"
+                  },
+                  "citation": {
+                    "documentName": "Q3_Operations_Report.pdf",
+                    "sectionName": "Department Performance",
+                    "pageNumber": "8"
+                  }
+                }
+              ],
+              "dataVisualizations": [
+                {
+                  "visualizationId": "viz_003_050",
+                  "visualType": "bar_chart",
+                  "title": "Department Efficiency Rates - Q3 2024",
+                  "data": {
+                    "labels": ["Manufacturing", "Quality Control", "Logistics", "Maintenance"],
+                    "datasets": [
+                      {
+                        "label": "Q3 2024 Efficiency (%)",
+                        "values": [91.2, 89.8, 85.4, 82.7],
+                        "metadata": {"color": "#10B981"}
+                      }
+                    ]
+                  },
+                  "sourceQueryIds": ["query_050"],
+                  "chartConfiguration": {
+                    "xAxisLabel": "Departments",
+                    "yAxisLabel": "Efficiency Rate (%)",
+                    "colorScheme": "blue-green"
+                  }
+                }
+              ],
+              "citations": [
+                {
+                  "citationId": "cite_003_050",
+                  "documentName": "Q3_Operations_Report.pdf",
+                  "sectionName": "Department Performance",
+                  "pageNumber": "8",
+                  "relevantTo": "All department efficiency rates and QoQ improvements"
+                }
+              ],
+              "contextualNotes": "The consistent improvement across all departments—ranging from 4.8pp to 8.5pp—demonstrates that efficiency gains are broadly distributed rather than concentrated in a single area. Manufacturing's leadership at 91.2% provides a clear benchmark for other departments, while the overall trend indicates that the organization's efficiency initiatives are successfully scaling across different operational functions."
+            },
+            "speakerNotes": "Emphasize that all four major operational departments achieved meaningful efficiency improvements in Q3, with no department declining. Highlight Manufacturing's exceptional 91.2% efficiency as the departmental leader, driven by automation protocols that can potentially be adapted for other departments. Note that Quality Control's 89.8% is particularly impressive given their focus on maintaining rigorous standards. Point out that Logistics' 6.2pp improvement validates the investment in route optimization technology. Acknowledge Maintenance's steady progress at 82.7% and emphasize the value of preventive maintenance in reducing costly unplanned downtime. Use the visualization to show the clear hierarchy of department performance and prepare to discuss strategies for bringing lower-performing departments up to Manufacturing's standard.",
+            "transitionHint": "With this department-level view of our efficiency gains, let's now examine how these improvements contributed to our overall quarter-over-quarter performance trends..."
+          }
+        ]
+      },
+      "contentMetadata": {
+        "totalDataPoints": 4,
+        "totalCitations": 1,
+        "queriesUsed": ["query_050"],
+        "ragRetrievalCount": 0,
+        "editingMetadata": {
+          "slidesRegenerated": [3],
+          "slidesPreserved": [1, 2, 4, 5, 6, 7, 8, 9, 10],
+          "contentChangeSummary": "Regenerated slide 3 with department-level efficiency breakdown, replacing previous KPI overview. Updated title, bullets, data visualizations, and citations to reflect new department-focused content."
+        }
+      },
+      "qualityMetrics": {
+        "dataAccuracy": 0.96,
+        "contentCoherence": 0.95,
+        "citationCompleteness": 1.0,
+        "detailLevel": "detailed"
+      },
+      "validationChecks": {
+        "allDataPointsSourced": true,
+        "allMetricsHaveUnits": true,
+        "citationsComplete": true,
+        "bulletPointLengthCompliant": true,
+        "noContradictions": true
+      },
+      "nextAction": "proceed_to_qa_agent",
+      "handoffToAgent": "QA Agent",
+      "timestamp": "2025-10-18T11:45:12Z"
+    }
+  }
+}
