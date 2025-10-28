@@ -1,0 +1,1371 @@
+{
+  "agentName": "Outline Agent",
+  "primaryFunction": "Generate structured 8-10 slide presentation outline with titles and bullet points for both initial generation and editing cycles",
+  "llmSelection": "Claude-4-Sonnet",
+  "performanceTargets": {
+    "responseTime": "<2s",
+    "accuracyTarget": "100% template adherence",
+    "structuralQuality": "95% logical flow and coherence"
+  },
+  "dataFlow": {
+    "inputSchema": {
+      "sessionId": "string",
+      "userId": "string",
+      "outlineId": "string",
+      "cycleType": "enum: ['generation', 'editing']",
+      "extractedInformation": {
+        "presentationRequirements": {
+          "topic": "string",
+          "targetAudience": "string or null",
+          "numSlides": "number",
+          "keyThemes": ["array of strings"],
+          "tone": "string or null",
+          "objectives": "string or null"
+        },
+        "dataRequirements": {
+          "documentsRequested": ["array of document names"],
+          "contentToExtract": ["array of specific content types"],
+          "metrics": ["array of metrics/KPIs"],
+          "timePeriods": ["array of time periods"],
+          "comparisons": ["array of comparison types"],
+          "dataCategories": ["array of data categories"]
+        },
+        "visualPreferences": {
+          "chartTypes": ["array of chart types"],
+          "style": "string or null",
+          "includeImages": "boolean or null",
+          "colorScheme": "string or null"
+        },
+        "editingRequirements": {
+          "editType": "enum: ['content', 'structure', 'general'] or null",
+          "targetSlide": "number or null",
+          "specificChanges": ["array of requested changes"],
+          "editScope": "enum: ['single_slide_content', 'multiple_slides_content', 'entire_presentation_content'] or null"
+        }
+      },
+      "queryResults": [
+        {
+          "queryId": "string",
+          "llmEnhancedAnswer": {
+            "answer": "string",
+            "confidence": "number",
+            "extractedData": {
+              "metrics": ["array of metrics with values"],
+              "insights": ["array of insights"],
+              "trends": ["array of trends"],
+              "comparisons": ["array of comparisons"]
+            }
+          }
+        }
+      ],
+      "editingContext": {
+        "isEditing": "boolean",
+        "previousOutline": {
+          "outlineId": "string or null",
+          "presentationOutline": {
+            "title": "string",
+            "totalSlides": "number",
+            "slides": [
+              {
+                "slideNumber": "number",
+                "slideType": "string",
+                "title": "string",
+                "bulletPoints": ["array of strings"],
+                "visualHints": ["array of strings"]
+              }
+            ]
+          }
+        },
+        "targetSlideForEdit": "number or null"
+      },
+      "timestamp": "string (ISO 8601)"
+    },
+
+    "outputSchema": {
+      "sessionId": "string",
+      "userId": "string",
+      "outlineId": "string",
+      "cycleType": "enum: ['generation', 'editing']",
+      "presentationOutline": {
+        "title": "string",
+        "subtitle": "string or null",
+        "totalSlides": "number",
+        "narrativeFlow": "string",
+        "slides": [
+          {
+            "slideNumber": "number",
+            "slideType": "enum: ['title_slide', 'overview_slide', 'data_slide', 'comparison_slide', 'trend_slide', 'insight_slide', 'recommendation_slide', 'conclusion_slide']",
+            "title": "string",
+            "bulletPoints": [
+              {
+                "bulletText": "string",
+                "subBullets": ["array of strings or null"],
+                "requiresData": "boolean",
+                "dataMapping": {
+                  "queryId": "string or null",
+                  "metricName": "string or null",
+                  "dataType": "enum: ['metric', 'comparison', 'trend', 'insight'] or null"
+                }
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "enum: ['chart', 'table', 'image', 'icon', 'diagram']",
+                "chartType": "string or null (e.g., 'line', 'bar', 'pie')",
+                "dataSource": "string (queryId or metric name)",
+                "purpose": "string"
+              }
+            ],
+            "speakerNotes": "string or null",
+            "keyMessage": "string (main takeaway for this slide)"
+          }
+        ]
+      },
+      "outlineMetadata": {
+        "templateCompliance": "boolean",
+        "slideCountCompliance": "boolean",
+        "narrativeCoherence": "number (0.0-1.0)",
+        "dataIntegration": {
+          "totalDataPoints": "number",
+          "queriesReferenced": ["array of query IDs"],
+          "coverageScore": "number (0.0-1.0, % of query results used)"
+        },
+        "editingMetadata": {
+          "modifiedSlides": ["array of slide numbers that were changed"],
+          "addedSlides": ["array of slide numbers that were added"],
+          "removedSlides": ["array of slide numbers that were removed"],
+          "structuralChanges": "string or null (description of structure changes)"
+        }
+      },
+      "qualityChecks": {
+        "allSlidesHaveTitles": "boolean",
+        "bulletPointsWithinLimit": "boolean",
+        "visualHintsProvided": "boolean",
+        "dataBackedClaims": "boolean",
+        "logicalFlow": "boolean"
+      },
+      "nextAction": "enum: ['proceed_to_content_agent', 'refine_outline', 'insufficient_data']",
+      "handoffToAgent": "string or null",
+      "timestamp": "string (ISO 8601)"
+    },
+
+    "outlineGenerationLogic": {
+      "generationMode": {
+        "description": "Create comprehensive outline from scratch",
+        "steps": [
+          "1. Analyze presentationRequirements and queryResults",
+          "2. Identify key themes and data points from llmEnhancedAnswers",
+          "3. Determine optimal narrative flow based on topic and audience",
+          "4. Allocate slides based on content availability and importance",
+          "5. Create slide structure with titles and bullet points",
+          "6. Map data points from queryResults to appropriate slides",
+          "7. Add visual hints based on data types and visualPreferences",
+          "8. Ensure logical flow and coherence across slides",
+          "9. Validate template compliance and constraints"
+        ],
+        "slideAllocationStrategy": {
+          "titleSlide": "Always include (1 slide)",
+          "overviewSlide": "If objectives or multiple themes present (1 slide)",
+          "dataSlides": "Allocate based on number of metrics and comparisons (3-5 slides)",
+          "trendSlides": "If temporal data or trends present (1-2 slides)",
+          "insightSlides": "Synthesize key insights and recommendations (1-2 slides)",
+          "conclusionSlide": "Always include with key takeaways (1 slide)"
+        },
+        "dataMappingStrategy": {
+          "metrics": "Map to data slides with visual charts",
+          "comparisons": "Map to comparison slides with side-by-side visuals",
+          "trends": "Map to trend slides with line/area charts",
+          "insights": "Map to insight slides with supporting data points"
+        }
+      },
+      "editingMode": {
+        "description": "Modify existing outline based on edit requirements",
+        "editTypes": {
+          "structureEdit": {
+            "description": "Modify slide order, add/remove slides, reorganize",
+            "actions": [
+              "Analyze editingRequirements.specificChanges",
+              "Identify structural modifications needed",
+              "Reorder slides while maintaining narrative flow",
+              "Add new slides if content requires expansion",
+              "Remove slides if content is redundant",
+              "Update slide numbers across entire outline",
+              "Validate total slides remain within 8-10 constraint"
+            ],
+            "examples": [
+              "Move efficiency slide before cost slide",
+              "Add dedicated slide for department breakdown",
+              "Combine two similar slides into one",
+              "Split dense slide into two focused slides"
+            ]
+          },
+          "contentEdit": {
+            "description": "Modify specific slide content (title, bullets, data mapping)",
+            "actions": [
+              "Locate targetSlide in previousOutline",
+              "Analyze editingRequirements.specificChanges",
+              "Update slide title if requested",
+              "Modify bullet points based on new data requirements",
+              "Remap data from queryResults to updated bullets",
+              "Update visual hints if data types changed",
+              "Preserve other slides from previousOutline",
+              "Maintain narrative flow around modified slide"
+            ],
+            "examples": [
+              "Change slide 3 title from 'Productivity' to 'Efficiency'",
+              "Replace productivity bullets with efficiency metrics",
+              "Add department-level breakdown bullets",
+              "Update visual hint from productivity chart to efficiency chart"
+            ]
+          },
+          "generalEdit": {
+            "description": "General improvements or refinements",
+            "actions": [
+              "Review entire previousOutline",
+              "Apply requested improvements across relevant slides",
+              "Enhance clarity and messaging",
+              "Optimize data presentation",
+              "Maintain overall structure unless explicitly changed"
+            ]
+          }
+        },
+        "optimizations": [
+          "Preserve unchanged slides from previousOutline",
+          "Only regenerate affected slides and their dependencies",
+          "Maintain slide numbering consistency",
+          "Ensure transitions remain smooth after edits"
+        ]
+      }
+    },
+
+    "narrativeFlowPatterns": {
+      "performanceReview": {
+        "description": "Standard pattern for operational/financial reviews",
+        "structure": [
+          "Title Slide",
+          "Executive Summary/Overview",
+          "Key Metrics & Performance",
+          "Trend Analysis",
+          "Comparative Analysis (QoQ, YoY)",
+          "Deep Dive Insights",
+          "Challenges & Opportunities",
+          "Recommendations",
+          "Conclusion & Next Steps"
+        ]
+      },
+      "problemSolution": {
+        "description": "Problem-focused narrative",
+        "structure": [
+          "Title Slide",
+          "Current Situation/Problem",
+          "Impact Analysis",
+          "Root Cause Analysis",
+          "Proposed Solutions",
+          "Implementation Plan",
+          "Expected Outcomes",
+          "Conclusion"
+        ]
+      },
+      "chronological": {
+        "description": "Time-based progression",
+        "structure": [
+          "Title Slide",
+          "Overview",
+          "Past Performance",
+          "Current Status",
+          "Future Projections",
+          "Key Milestones",
+          "Recommendations",
+          "Conclusion"
+        ]
+      },
+      "thematic": {
+        "description": "Topic-based organization",
+        "structure": [
+          "Title Slide",
+          "Overview",
+          "Theme 1 Analysis",
+          "Theme 2 Analysis",
+          "Theme 3 Analysis",
+          "Cross-Theme Insights",
+          "Recommendations",
+          "Conclusion"
+        ]
+      }
+    },
+
+    "cycleModes": {
+      "generationMode": {
+        "description": "Create complete outline from scratch",
+        "activeFields": [
+          "presentationRequirements",
+          "queryResults",
+          "templateConstraints"
+        ],
+        "ignoredFields": [
+          "editingContext",
+          "editingRequirements"
+        ],
+        "behavior": "Generate 8-10 slides following narrative flow pattern, map all query results to appropriate slides"
+      },
+      "editingMode": {
+        "description": "Modify existing outline based on edit type",
+        "activeFields": [
+          "editingRequirements",
+          "editingContext",
+          "queryResults (if new data available)"
+        ],
+        "requiredFields": [
+          "editingContext.previousOutline",
+          "editingRequirements.editType"
+        ],
+        "behavior": "Apply targeted modifications while preserving unchanged content, maintain narrative coherence",
+        "editScenarios": {
+          "singleSlideContentEdit": {
+            "action": "Modify only targetSlide, preserve all other slides, update data mapping if new queryResults"
+          },
+          "multipleSlideContentEdit": {
+            "action": "Modify multiple affected slides, preserve others, ensure consistency across edits"
+          },
+          "structureEdit": {
+            "action": "Reorganize slide order, add/remove slides as needed, renumber all slides, validate constraints"
+          }
+        }
+      }
+    }
+  },
+
+  "rationale": "Excellent structural reasoning and narrative planning with Claude-4-Sonnet for coherent presentation flow",
+
+  "integrationPoints": {
+    "inputFrom": [
+      "Conversation Agent (extracted information and requirements)",
+      "Query Agent (LLM-enhanced answers and extracted data)"
+    ],
+    "handoffAgents": [
+      "Content Agent (after outline approval for content generation)"
+    ],
+    "dataStores": {
+      "redis": "Cache outlines for editing and version history"
+    }
+  },
+
+  "examples": {
+    "generationModeInput": {
+      "sessionId": "session_789",
+      "userId": "user_456",
+      "outlineId": "outline_001",
+      "cycleType": "generation",
+      "extractedInformation": {
+        "presentationRequirements": {
+          "topic": "Q3 operational performance",
+          "targetAudience": "executive team",
+          "numSlides": 10,
+          "keyThemes": ["efficiency", "productivity", "cost optimization"],
+          "tone": "professional",
+          "objectives": "Demonstrate Q3 improvements and identify areas for Q4 focus"
+        },
+        "dataRequirements": {
+          "documentsRequested": ["Q3_Operations_Report.pdf"],
+          "contentToExtract": ["operational metrics", "KPIs", "performance trends"],
+          "metrics": ["efficiency rate", "productivity index", "cost per unit"],
+          "timePeriods": ["Q3 2024", "Q2 2024"],
+          "comparisons": ["QoQ", "YoY"],
+          "dataCategories": ["operational", "financial"]
+        },
+        "visualPreferences": {
+          "chartTypes": ["line chart", "bar chart"],
+          "style": "corporate",
+          "includeImages": true,
+          "colorScheme": "blue-green"
+        },
+        "editingRequirements": null
+      },
+      "queryResults": [
+        {
+          "queryId": "query_001",
+          "llmEnhancedAnswer": {
+            "answer": "Q3 2024 demonstrated exceptional operational performance with 12% efficiency improvement QoQ...",
+            "confidence": 0.95,
+            "extractedData": {
+              "metrics": [
+                {
+                  "metricName": "Efficiency Improvement",
+                  "value": 12,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024 QoQ"
+                }
+              ],
+              "insights": [
+                "Record productivity levels achieved",
+                "Cost discipline maintained during growth"
+              ],
+              "trends": [
+                "Upward efficiency trend",
+                "Downward cost trend"
+              ],
+              "comparisons": []
+            }
+          }
+        },
+        {
+          "queryId": "query_002",
+          "llmEnhancedAnswer": {
+            "answer": "Q3 efficiency rate reached 87.3%, productivity index at 124.5...",
+            "confidence": 0.98,
+            "extractedData": {
+              "metrics": [
+                {
+                  "metricName": "Efficiency Rate",
+                  "value": 87.3,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024"
+                },
+                {
+                  "metricName": "Productivity Index",
+                  "value": 124.5,
+                  "unit": "index",
+                  "timePeriod": "Q3 2024"
+                }
+              ],
+              "insights": [],
+              "trends": [],
+              "comparisons": [
+                {
+                  "comparisonType": "QoQ",
+                  "baseline": 78.1,
+                  "current": 87.3,
+                  "change": "+9.2 pp"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "templateConstraints": {
+        "slideCount": {
+          "min": 8,
+          "max": 10,
+          "target": 10
+        },
+        "slideTypes": [
+          "title_slide",
+          "overview_slide",
+          "data_slide",
+          "comparison_slide",
+          "trend_slide",
+          "insight_slide",
+          "recommendation_slide",
+          "conclusion_slide"
+        ],
+        "maxBulletsPerSlide": 5,
+        "narrativeFlow": "performance_review"
+      },
+      "editingContext": {
+        "isEditing": false,
+        "previousOutline": null,
+        "targetSlideForEdit": null
+      },
+      "timestamp": "2025-10-18T10:35:08Z"
+    },
+
+    "generationModeOutput": {
+      "sessionId": "session_789",
+      "userId": "user_456",
+      "outlineId": "outline_001",
+      "cycleType": "generation",
+      "presentationOutline": {
+        "title": "Q3 2024 Operational Performance Review",
+        "subtitle": "Efficiency Gains and Strategic Opportunities",
+        "totalSlides": 10,
+        "narrativeFlow": "performance_review",
+        "slides": [
+          {
+            "slideNumber": 1,
+            "slideType": "title_slide",
+            "title": "Q3 2024 Operational Performance Review",
+            "bulletPoints": [
+              {
+                "bulletText": "Efficiency Gains and Strategic Opportunities",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "Executive Team Presentation",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "October 2024",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "image",
+                "chartType": null,
+                "dataSource": "corporate_logo",
+                "purpose": "Branding and professional appearance"
+              }
+            ],
+            "speakerNotes": "Welcome and introduce the Q3 performance review focus",
+            "keyMessage": "Professional introduction to Q3 operational review"
+          },
+          {
+            "slideNumber": 2,
+            "slideType": "overview_slide",
+            "title": "Executive Summary: Q3 Highlights",
+            "bulletPoints": [
+              {
+                "bulletText": "Achieved 12% efficiency improvement quarter-over-quarter",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_001",
+                  "metricName": "Efficiency Improvement",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Record productivity levels with 18% reduction in operational downtime",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_001",
+                  "metricName": "Operational Downtime Reduction",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Cost optimization delivered 8% reduction in cost per unit",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_001",
+                  "metricName": "Cost per Unit Reduction",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Strong foundation for Q4 strategic initiatives",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "icon",
+                "chartType": null,
+                "dataSource": "key_metrics",
+                "purpose": "Visual emphasis on key achievements"
+              }
+            ],
+            "speakerNotes": "Emphasize the exceptional Q3 performance and momentum into Q4",
+            "keyMessage": "Q3 delivered exceptional results across efficiency, productivity, and cost metrics"
+          },
+          {
+            "slideNumber": 3,
+            "slideType": "data_slide",
+            "title": "Key Performance Indicators: Q3 2024",
+            "bulletPoints": [
+              {
+                "bulletText": "Efficiency Rate: 87.3% (Target: 85%)",
+                "subBullets": [
+                  "9.2 percentage point improvement from Q2 (78.1%)",
+                  "Exceeded target by 2.3 percentage points"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_002",
+                  "metricName": "Efficiency Rate",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Productivity Index: 124.5 (Baseline: 100)",
+                "subBullets": [
+                  "5.3% increase from Q2 (118.2)",
+                  "24.5% above baseline performance"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_002",
+                  "metricName": "Productivity Index",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Cost per Unit: $45.20",
+                "subBullets": [
+                  "$3.90 reduction from Q2 ($49.10)",
+                  "8% cost optimization achieved"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_002",
+                  "metricName": "Cost per Unit",
+                  "dataType": "metric"
+                }
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "chart",
+                "chartType": "bar",
+                "dataSource": "query_002",
+                "purpose": "Compare Q3 vs Q2 KPIs side-by-side"
+              }
+            ],
+            "speakerNotes": "Walk through each KPI, emphasizing QoQ improvements and target achievements",
+            "keyMessage": "All key metrics exceeded targets with strong QoQ improvements"
+          },
+          {
+            "slideNumber": 4,
+            "slideType": "comparison_slide",
+            "title": "Quarter-over-Quarter Performance Comparison",
+            "bulletPoints": [
+              {
+                "bulletText": "Efficiency Rate: +11.8% improvement (Q2: 78.1% → Q3: 87.3%)",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_002",
+                  "metricName": "Efficiency Rate",
+                  "dataType": "comparison"
+                }
+              },
+              {
+                "bulletText": "Productivity Index: +5.3% growth (Q2: 118.2 → Q3: 124.5)",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_002",
+                  "metricName": "Productivity Index",
+                  "dataType": "comparison"
+                }
+              },
+              {
+                "bulletText": "Cost per Unit: -7.9% reduction (Q2: $49.10 → Q3: $45.20)",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_002",
+                  "metricName": "Cost per Unit",
+                  "dataType": "comparison"
+                }
+              },
+              {
+                "bulletText": "Optimal outcome: productivity increased while costs decreased",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "chart",
+                "chartType": "line",
+                "dataSource": "query_002",
+                "purpose": "Show Q2 to Q3 trend lines for all KPIs"
+              }
+            ],
+            "speakerNotes": "Highlight the rare achievement of simultaneous productivity gains and cost reductions",
+            "keyMessage": "Q3 achieved the optimal operational outcome with efficiency and cost improvements"
+          },
+          {
+            "slideNumber": 5,
+            "slideType": "trend_slide",
+            "title": "Efficiency Trends: Building Momentum",
+            "bulletPoints": [
+              {
+                "bulletText": "Consistent upward efficiency trajectory from Q2 to Q3",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_001",
+                  "metricName": "Efficiency Trends",
+                  "dataType": "trend"
+                }
+              },
+              {
+                "bulletText": "Accelerating improvement rate indicates sustainable gains",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "Process optimization initiatives showing measurable impact",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_001",
+                  "metricName": "Process Optimization",
+                  "dataType": "insight"
+                }
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "chart",
+                "chartType": "line",
+                "dataSource": "query_001",
+                "purpose": "Visualize upward efficiency trend with projection"
+              }
+            ],
+            "speakerNotes": "Emphasize momentum and sustainability of efficiency improvements",
+            "keyMessage": "Efficiency improvements are accelerating and sustainable"
+          },
+          {
+            "slideNumber": 6,
+            "slideType": "insight_slide",
+            "title": "Key Drivers of Q3 Success",
+            "bulletPoints": [
+              {
+                "bulletText": "Process automation protocols reduced operational downtime",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_001",
+                  "metricName": "Automation Impact",
+                  "dataType": "insight"
+                }
+              },
+              {
+                "bulletText": "Route optimization improved logistics efficiency",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_001",
+                  "metricName": "Logistics Optimization",
+                  "dataType": "insight"
+                }
+              },
+              {
+                "bulletText": "Resource allocation discipline maintained cost control",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_001",
+                  "metricName": "Cost Control",
+                  "dataType": "insight"
+                }
+              },
+              {
+                "bulletText": "Cross-functional collaboration enhanced overall performance",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "diagram",
+                "chartType": null,
+                "dataSource": "success_drivers",
+                "purpose": "Show interconnection of key success factors"
+              }
+            ],
+            "speakerNotes": "Connect specific initiatives to performance outcomes",
+            "keyMessage": "Strategic initiatives and operational discipline drove Q3 success"
+          },
+          {
+            "slideNumber": 7,
+            "slideType": "insight_slide",
+            "title": "Cost Optimization Analysis",
+            "bulletPoints": [
+              {
+                "bulletText": "8% cost per unit reduction achieved through efficiency gains",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_002",
+                  "metricName": "Cost per Unit",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Downward cost trend sustained over multiple quarters",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_001",
+                  "metricName": "Cost Trends",
+                  "dataType": "trend"
+                }
+              },
+              {
+                "bulletText": "Quality standards maintained during cost optimization",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "Scalable cost structure supports growth objectives",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "chart",
+                "chartType": "bar",
+                "dataSource": "query_002",
+                "purpose": "Show cost per unit trend with quality metrics overlay"
+              }
+            ],
+            "speakerNotes": "Emphasize sustainable cost reductions without quality compromise",
+            "keyMessage": "Cost optimization achieved through efficiency, not quality reduction"
+          },
+          {
+            "slideNumber": 8,
+            "slideType": "insight_slide",
+            "title": "Challenges and Opportunities",
+            "bulletPoints": [
+              {
+                "bulletText": "Opportunity: Extend efficiency gains to additional departments",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "Challenge: Maintaining momentum as low-hanging fruit diminishes",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "Opportunity: Scale automation protocols across operations",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "Focus: Sustain improvements while pursuing next-level optimization",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "diagram",
+                "chartType": null,
+                "dataSource": "swot_analysis",
+                "purpose": "Balance opportunities and challenges visually"
+              }
+            ],
+            "speakerNotes": "Set context for Q4 initiatives and strategic focus areas",
+            "keyMessage": "Strong Q3 foundation enables pursuit of advanced optimization opportunities"
+          },
+          {
+            "slideNumber": 9,
+            "slideType": "recommendation_slide",
+            "title": "Q4 Strategic Priorities",
+            "bulletPoints": [
+              {
+                "bulletText": "Expand automation protocols to all operational departments",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "Implement advanced analytics for predictive efficiency management",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "Continue cost discipline while investing in capability building",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "Establish efficiency benchmarks for 2025 planning",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "diagram",
+                "chartType": null,
+                "dataSource": "roadmap",
+                "purpose": "Show Q4 initiative timeline and dependencies"
+              }
+            ],
+            "speakerNotes": "Present actionable recommendations with clear ownership and timelines",
+            "keyMessage": "Q4 priorities focus on scaling successes and building next-generation capabilities"
+          },
+          {
+            "slideNumber": 10,
+            "slideType": "conclusion_slide",
+            "title": "Conclusion: Strong Performance, Clear Path Forward",
+            "bulletPoints": [
+              {
+                "bulletText": "Q3 delivered exceptional results: 12% efficiency gain, record productivity",
+                "subBullets": null,
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_001",
+                  "metricName": "Summary Metrics",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Sustainable improvements demonstrated through consistent trends",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "Q4 strategy leverages momentum for advanced optimization",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              },
+              {
+                "bulletText": "Strong foundation supports 2025 growth objectives",
+                "subBullets": null,
+                "requiresData": false,
+                "dataMapping": null
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "icon",
+                "chartType": null,
+                "dataSource": "success_indicators",
+                "purpose": "Visual summary of key achievements"
+              }
+            ],
+            "speakerNotes": "Conclude with confidence and forward momentum",
+            "keyMessage": "Q3 success positions the organization for continued excellence"
+          }
+        ]
+      },
+      "outlineMetadata": {
+        "templateCompliance": true,
+        "slideCountCompliance": true,
+        "narrativeCoherence": 0.95,
+        "dataIntegration": {
+          "totalDataPoints": 18,
+          "queriesReferenced": ["query_001", "query_002"],
+          "coverageScore": 1.0
+        },
+        "editingMetadata": null
+      },
+      "qualityChecks": {
+        "allSlidesHaveTitles": true,
+        "bulletPointsWithinLimit": true,
+        "visualHintsProvided": true,
+        "dataBackedClaims": true,
+        "logicalFlow": true
+      },
+      "nextAction": "proceed_to_content_agent",
+      "handoffToAgent": "Content Agent",
+      "timestamp": "2025-10-18T10:35:10Z"
+    },
+
+    "editingModeInput_ContentEdit": {
+      "sessionId": "session_790",
+      "userId": "user_456",
+      "outlineId": "outline_050",
+      "cycleType": "editing",
+      "extractedInformation": {
+        "presentationRequirements": {
+          "topic": "Q3 operational performance",
+          "targetAudience": "executive team",
+          "numSlides": 10,
+          "keyThemes": ["efficiency", "productivity", "cost optimization"],
+          "tone": "professional",
+          "objectives": "Demonstrate Q3 improvements and identify areas for Q4 focus"
+        },
+        "dataRequirements": {
+          "documentsRequested": [],
+          "contentToExtract": ["department efficiency breakdown"],
+          "metrics": ["department efficiency rates"],
+          "timePeriods": ["Q3 2024"],
+          "comparisons": [],
+          "dataCategories": ["operational"]
+        },
+        "visualPreferences": null,
+        "editingRequirements": {
+          "editType": "content",
+          "targetSlide": 3,
+          "specificChanges": [
+            "Change slide title from 'Key Performance Indicators' to 'Department Efficiency Breakdown'",
+            "Replace KPI bullets with department-level efficiency metrics",
+            "Add visual hint for department comparison chart"
+          ],
+          "editScope": "single_slide_content"
+        }
+      },
+      "queryResults": [
+        {
+          "queryId": "query_050",
+          "llmEnhancedAnswer": {
+            "answer": "Department efficiency breakdown shows Manufacturing at 91.2%, Quality Control at 89.8%...",
+            "confidence": 0.96,
+            "extractedData": {
+              "metrics": [
+                {
+                  "metricName": "Manufacturing Efficiency",
+                  "value": 91.2,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024"
+                },
+                {
+                  "metricName": "Logistics Efficiency",
+                  "value": 85.4,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024"
+                },
+                {
+                  "metricName": "Quality Control Efficiency",
+                  "value": 89.8,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024"
+                },
+                {
+                  "metricName": "Maintenance Efficiency",
+                  "value": 82.7,
+                  "unit": "percent",
+                  "timePeriod": "Q3 2024"
+                }
+              ],
+              "insights": [
+                "Manufacturing led improvements across departments",
+                "All departments improved QoQ by 4.8pp to 8.5pp"
+              ],
+              "trends": [],
+              "comparisons": []
+            }
+          }
+        }
+      ],
+      "templateConstraints": {
+        "slideCount": {
+          "min": 8,
+          "max": 10,
+          "target": 10
+        },
+        "slideTypes": [
+          "title_slide",
+          "overview_slide",
+          "data_slide",
+          "comparison_slide",
+          "trend_slide",
+          "insight_slide",
+          "recommendation_slide",
+          "conclusion_slide"
+        ],
+        "maxBulletsPerSlide": 5,
+        "narrativeFlow": "performance_review"
+      },
+      "editingContext": {
+        "isEditing": true,
+        "previousOutline": {
+          "outlineId": "outline_001",
+          "presentationOutline": {
+            "title": "Q3 2024 Operational Performance Review",
+            "totalSlides": 10,
+            "slides": [
+              {
+                "slideNumber": 3,
+                "slideType": "data_slide",
+                "title": "Key Performance Indicators: Q3 2024",
+                "bulletPoints": [
+                  {
+                    "bulletText": "Efficiency Rate: 87.3%",
+                    "subBullets": ["9.2pp improvement from Q2"],
+                    "requiresData": true,
+                    "dataMapping": {
+                      "queryId": "query_002",
+                      "metricName": "Efficiency Rate",
+                      "dataType": "metric"
+                    }
+                  }
+                ],
+                "visualHints": [
+                  {
+                    "visualType": "chart",
+                    "chartType": "bar",
+                    "dataSource": "query_002",
+                    "purpose": "KPI comparison"
+                  }
+                ],
+                "speakerNotes": "Walk through KPIs",
+                "keyMessage": "All metrics exceeded targets"
+              }
+            ]
+          }
+        },
+        "targetSlideForEdit": 3
+      },
+      "timestamp": "2025-10-18T11:45:05Z"
+    },
+
+    "editingModeOutput_ContentEdit": {
+      "sessionId": "session_790",
+      "userId": "user_456",
+      "outlineId": "outline_050",
+      "cycleType": "editing",
+      "presentationOutline": {
+        "title": "Q3 2024 Operational Performance Review",
+        "subtitle": "Efficiency Gains and Strategic Opportunities",
+        "totalSlides": 10,
+        "narrativeFlow": "performance_review",
+        "slides": [
+          {
+            "slideNumber": 1,
+            "slideType": "title_slide",
+            "title": "Q3 2024 Operational Performance Review",
+            "bulletPoints": [],
+            "visualHints": [],
+            "speakerNotes": "Welcome presentation",
+            "keyMessage": "Introduction"
+          },
+          {
+            "slideNumber": 2,
+            "slideType": "overview_slide",
+            "title": "Executive Summary: Q3 Highlights",
+            "bulletPoints": [],
+            "visualHints": [],
+            "speakerNotes": "Overview of Q3",
+            "keyMessage": "Q3 highlights"
+          },
+          {
+            "slideNumber": 3,
+            "slideType": "data_slide",
+            "title": "Department Efficiency Breakdown: Q3 2024",
+            "bulletPoints": [
+              {
+                "bulletText": "Manufacturing: 91.2% (↑8.5pp from Q2)",
+                "subBullets": [
+                  "Highest efficiency across all departments",
+                  "Driven by new automation protocols"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_050",
+                  "metricName": "Manufacturing Efficiency",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Quality Control: 89.8% (↑5.1pp from Q2)",
+                "subBullets": [
+                  "Strong performance maintaining quality standards"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_050",
+                  "metricName": "Quality Control Efficiency",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Logistics: 85.4% (↑6.2pp from Q2)",
+                "subBullets": [
+                  "Route optimization showing measurable impact"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_050",
+                  "metricName": "Logistics Efficiency",
+                  "dataType": "metric"
+                }
+              },
+              {
+                "bulletText": "Maintenance: 82.7% (↑4.8pp from Q2)",
+                "subBullets": [
+                  "Steady improvement in preventive maintenance"
+                ],
+                "requiresData": true,
+                "dataMapping": {
+                  "queryId": "query_050",
+                  "metricName": "Maintenance Efficiency",
+                  "dataType": "metric"
+                }
+              }
+            ],
+            "visualHints": [
+              {
+                "visualType": "chart",
+                "chartType": "bar",
+                "dataSource": "query_050",
+                "purpose": "Compare department efficiency rates side-by-side"
+              }
+            ],
+            "speakerNotes": "Highlight Manufacturing's leadership and consistent improvements across all departments",
+            "keyMessage": "All departments achieved efficiency improvements with Manufacturing leading at 91.2%"
+          },
+          {
+            "slideNumber": 4,
+            "slideType": "comparison_slide",
+            "title": "Quarter-over-Quarter Performance Comparison",
+            "bulletPoints": [],
+            "visualHints": [],
+            "speakerNotes": "QoQ comparison",
+            "keyMessage": "Strong QoQ improvements"
+          }
+        ]
+      },
+      "outlineMetadata": {
+        "templateCompliance": true,
+        "slideCountCompliance": true,
+        "narrativeCoherence": 0.94,
+        "dataIntegration": {
+          "totalDataPoints": 4,
+          "queriesReferenced": ["query_050"],
+          "coverageScore": 1.0
+        },
+        "editingMetadata": {
+          "modifiedSlides": [3],
+          "addedSlides": [],
+          "removedSlides": [],
+          "structuralChanges": "Modified slide 3 content and title, replaced KPI overview with department breakdown"
+        }
+      },
+      "qualityChecks": {
+        "allSlidesHaveTitles": true,
+        "bulletPointsWithinLimit": true,
+        "visualHintsProvided": true,
+        "dataBackedClaims": true,
+        "logicalFlow": true
+      },
+      "nextAction": "proceed_to_content_agent",
+      "handoffToAgent": "Content Agent",
+      "timestamp": "2025-10-18T11:45:06Z"
+    },
+
+    "editingModeInput_StructureEdit": {
+      "sessionId": "session_791",
+      "userId": "user_456",
+      "outlineId": "outline_051",
+      "cycleType": "editing",
+      "extractedInformation": {
+        "presentationRequirements": {
+          "topic": "Q3 operational performance",
+          "targetAudience": "executive team",
+          "numSlides": 10,
+          "keyThemes": ["efficiency", "productivity", "cost optimization"],
+          "tone": "professional",
+          "objectives": "Demonstrate Q3 improvements"
+        },
+        "dataRequirements": {
+          "documentsRequested": [],
+          "contentToExtract": [],
+          "metrics": [],
+          "timePeriods": [],
+          "comparisons": [],
+          "dataCategories": []
+        },
+        "visualPreferences": null,
+        "editingRequirements": {
+          "editType": "structure",
+          "targetSlide": null,
+          "specificChanges": [
+            "Move cost optimization slide (slide 7) before the comparison slide (slide 4)",
+            "This provides better context for understanding the QoQ comparisons"
+          ],
+          "editScope": "entire_presentation_content"
+        }
+      },
+      "queryResults": [],
+      "templateConstraints": {
+        "slideCount": {
+          "min": 8,
+          "max": 10,
+          "target": 10
+        },
+        "slideTypes": [],
+        "maxBulletsPerSlide": 5,
+        "narrativeFlow": "performance_review"
+      },
+      "editingContext": {
+        "isEditing": true,
+        "previousOutline": {
+          "outlineId": "outline_001",
+          "presentationOutline": {
+            "title": "Q3 2024 Operational Performance Review",
+            "totalSlides": 10,
+            "slides": [
+              {"slideNumber": 1, "title": "Title Slide"},
+              {"slideNumber": 2, "title": "Executive Summary"},
+              {"slideNumber": 3, "title": "Key Performance Indicators"},
+              {"slideNumber": 4, "title": "Quarter-over-Quarter Comparison"},
+              {"slideNumber": 5, "title": "Efficiency Trends"},
+              {"slideNumber": 6, "title": "Key Drivers of Success"},
+              {"slideNumber": 7, "title": "Cost Optimization Analysis"},
+              {"slideNumber": 8, "title": "Challenges and Opportunities"},
+              {"slideNumber": 9, "title": "Q4 Strategic Priorities"},
+              {"slideNumber": 10, "title": "Conclusion"}
+            ]
+          }
+        },
+        "targetSlideForEdit": null
+      },
+      "timestamp": "2025-10-18T12:00:00Z"
+    },
+
+    "editingModeOutput_StructureEdit": {
+      "sessionId": "session_791",
+      "userId": "user_456",
+      "outlineId": "outline_051",
+      "cycleType": "editing",
+      "presentationOutline": {
+        "title": "Q3 2024 Operational Performance Review",
+        "subtitle": "Efficiency Gains and Strategic Opportunities",
+        "totalSlides": 10,
+        "narrativeFlow": "performance_review",
+        "slides": [
+          {"slideNumber": 1, "slideType": "title_slide", "title": "Q3 2024 Operational Performance Review", "bulletPoints": [], "visualHints": [], "speakerNotes": "", "keyMessage": "Introduction"},
+          {"slideNumber": 2, "slideType": "overview_slide", "title": "Executive Summary: Q3 Highlights", "bulletPoints": [], "visualHints": [], "speakerNotes": "", "keyMessage": "Overview"},
+          {"slideNumber": 3, "slideType": "data_slide", "title": "Key Performance Indicators: Q3 2024", "bulletPoints": [], "visualHints": [], "speakerNotes": "", "keyMessage": "KPIs"},
+          {"slideNumber": 4, "slideType": "insight_slide", "title": "Cost Optimization Analysis", "bulletPoints": [], "visualHints": [], "speakerNotes": "", "keyMessage": "Cost analysis provides context for comparisons"},
+          {"slideNumber": 5, "slideType": "comparison_slide", "title": "Quarter-over-Quarter Performance Comparison", "bulletPoints": [], "visualHints": [], "speakerNotes": "", "keyMessage": "QoQ comparison with cost context"},
+          {"slideNumber": 6, "slideType": "trend_slide", "title": "Efficiency Trends: Building Momentum", "bulletPoints": [], "visualHints": [], "speakerNotes": "", "keyMessage": "Efficiency trends"},
+          {"slideNumber": 7, "slideType": "insight_slide", "title": "Key Drivers of Q3 Success", "bulletPoints": [], "visualHints": [], "speakerNotes": "", "keyMessage": "Success drivers"},
+          {"slideNumber": 8, "slideType": "insight_slide", "title": "Challenges and Opportunities", "bulletPoints": [], "visualHints": [], "speakerNotes": "", "keyMessage": "Future focus"},
+          {"slideNumber": 9, "slideType": "recommendation_slide", "title": "Q4 Strategic Priorities", "bulletPoints": [], "visualHints": [], "speakerNotes": "", "keyMessage": "Q4 priorities"},
+          {"slideNumber": 10, "slideType": "conclusion_slide", "title": "Conclusion: Strong Performance, Clear Path Forward", "bulletPoints": [], "visualHints": [], "speakerNotes": "", "keyMessage": "Conclusion"}
+        ]
+      },
+      "outlineMetadata": {
+        "templateCompliance": true,
+        "slideCountCompliance": true,
+        "narrativeCoherence": 0.96,
+        "dataIntegration": {
+          "totalDataPoints": 0,
+          "queriesReferenced": [],
+          "coverageScore": 0
+        },
+        "editingMetadata": {
+          "modifiedSlides": [4, 5, 6, 7],
+          "addedSlides": [],
+          "removedSlides": [],
+          "structuralChanges": "Moved Cost Optimization slide from position 7 to position 4, renumbered subsequent slides. Improved narrative flow by providing cost context before QoQ comparisons."
+        }
+      },
+      "qualityChecks": {
+        "allSlidesHaveTitles": true,
+        "bulletPointsWithinLimit": true,
+        "visualHintsProvided": true,
+        "dataBackedClaims": true,
+        "logicalFlow": true
+      },
+      "nextAction": "proceed_to_content_agent",
+      "handoffToAgent": "Content Agent",
+      "timestamp": "2025-10-18T12:00:01Z"
+    }
+  }
+}

@@ -1,0 +1,364 @@
+{
+  "agentName": "Conversation Agent",
+  "primaryFunction": "Talks with the user to extract missing info for PPT generation and handle editing requests with RBAC validation",
+  "llmSelection": "Mistral / Open-source",
+  "performanceTargets": {
+    "responseTime": "<2s",
+    "accuracyTarget": "N/A"
+  },
+  "dataFlow": {
+    "inputSchema": {
+      "sessionId": "string",
+      "userId": "string",
+      "messageId": "string",
+      "userMessage": "string",
+      "cycleType": "enum: ['generation', 'editing']",
+      "userProfile": {
+        "name": "string",
+        "role": "string",
+        "department": "string",
+        "accessScopes": ["array of strings"],
+        "permissions": {
+          "viewFinancialData": "boolean",
+          "viewOperationalData": "boolean",
+          "viewHRData": "boolean",
+          "viewSalesData": "boolean",
+          "viewConfidentialData": "boolean"
+        }
+      },
+      "accessibleDocuments": [
+        {
+          "documentId": "string",
+          "documentName": "string",
+          "docType": "string",
+          "department": "string",
+          "accessLevel": "string",
+          "summary": "string",
+          "tags": ["array of strings"],
+          "topics": ["array of strings"]
+        }
+      ],
+      "editingContext": {
+        "isEditing": "boolean",
+        "previousResponse": {
+          "previousGeneratedOutline": "object or null",
+          "previousGeneratedContent": "object or null",
+          "slideContent": "object or null"
+        },
+        "editQuery": "string or null",
+        "targetSlide": "number or null",
+        "editType": "enum: ['content', 'structure', 'general'] or null"
+      }
+    },
+
+    "outputSchema": {
+      "sessionId": "string",
+      "messageId": "string",
+      "response": "string",
+      "isComplete": "boolean",
+      "extractedInformation": {
+        "presentationRequirements": {
+          "topic": "string or null",
+          "targetAudience": "string or null",
+          "numSlides": "number or null (default: 10)",
+          "keyThemes": ["array of strings"],
+          "tone": "string or null",
+          "objectives": "string or null"
+        },
+        "dataRequirements": {
+          "documentsRequested": ["array of document names"],
+          "contentToExtract": ["array of specific content types"],
+          "metrics": ["array of metrics/KPIs"],
+          "timePeriods": ["array of time periods"],
+          "comparisons": ["array of comparison types"],
+          "dataCategories": ["array of data categories"]
+        },
+        "visualPreferences": {
+          "chartTypes": ["array of chart types"],
+          "style": "string or null",
+          "includeImages": "boolean or null",
+          "colorScheme": "string or null"
+        },
+        "editingRequirements": {
+          "editType": "enum: ['content', 'structure', 'general'] or null",
+          "targetSlide": "number or null",
+          "specificChanges": ["array of requested changes"],
+          "editScope": "enum: ['single_slide_content', 'multiple_slides_content', 'entire_presentation_content'] or null"
+        }
+      },
+      "rbacValidation": {
+        "validationResult": "enum: ['allowed', 'partially_allowed', 'denied']",
+        "allowedItems": ["array of accessible data items"],
+        "deniedItems": ["array of restricted data items"],
+        "explanation": "string",
+        "suggestedAlternatives": ["array of alternative accessible data"],
+        "professionalMessage": "string or null"
+      },
+      "rbacConcerns": [
+        "array of strings describing potential access scope issues"
+      ],
+      "missingInformation": [
+        "array of strings listing specific missing items"
+      ],
+      "confidenceScore": "number (0.0-1.0)",
+      "conversationState": "enum: ['gathering', 'clarifying', 'validating', 'complete', 'editing']",
+      "nextAction": "enum: ['continue_conversation', 'handoff_to_document_selection', 'request_clarification', 'process_edit', 'validate_permissions']",
+      "handoffToAgent": "string or null",
+      "rbacWarnings": [
+        "array of warning messages about access restrictions"
+      ],
+      "suggestedDocuments": [
+        "array of document names from accessible documents"
+      ],
+      "timestamp": "string (ISO 8601)"
+    },
+
+    "rbacFunctionality": {
+      "accessValidation": {
+        "description": "Validates requested data against user's access scope and permissions",
+        "inputSchema": {
+          "userId": "string",
+          "userProfile": "object (from inputSchema.userProfile)",
+          "requestedDataCategories": ["array of data categories"],
+          "requestedDocuments": ["array of document names"],
+          "requestedMetrics": ["array of metrics/KPIs"]
+        },
+        "outputSchema": {
+          "validationResult": "enum: ['allowed', 'partially_allowed', 'denied']",
+          "allowedItems": ["array of items user CAN access"],
+          "deniedItems": ["array of items OUTSIDE user's scope"],
+          "explanation": "string",
+          "suggestedAlternatives": ["array of alternative accessible data"],
+          "professionalMessage": "string"
+        }
+      },
+      "documentAccessFiltering": {
+        "description": "Filters accessible documents based on user's department, role, and access level",
+        "logic": "Matches user.department, user.accessScopes, and user.permissions against document.department, document.accessLevel, and document.topics"
+      },
+      "permissionChecks": [
+        "Check if requested financial data matches viewFinancialData permission",
+        "Check if requested operational data matches viewOperationalData permission",
+        "Check if requested HR data matches viewHRData permission",
+        "Check if requested sales data matches viewSalesData permission",
+        "Check if requested confidential data matches viewConfidentialData permission"
+      ]
+    },
+
+    "cycleModes": {
+      "generationMode": {
+        "description": "Initial presentation generation flow",
+        "activeFields": [
+          "presentationRequirements",
+          "dataRequirements",
+          "visualPreferences",
+          "rbacValidation"
+        ],
+        "ignoredFields": [
+          "editingContext",
+          "editingRequirements"
+        ]
+      },
+      "editingMode": {
+        "description": "Presentation editing and modification flow",
+        "activeFields": [
+          "editingContext",
+          "editingRequirements",
+          "rbacValidation"
+        ],
+        "requiredFields": [
+          "editingContext.previousResponse",
+          "editingContext.editQuery"
+        ],
+        "editClassification": {
+          "contentEdit": "Routes to Content Agent for text/data modifications",
+          "visualEdit": "Routes to Image Coordination Agent or Format Agent",
+          "structureEdit": "Routes to Outline Agent for slide reorganization",
+          "generalEdit": "Stays with Conversation Agent for clarification"
+        }
+      }
+    }
+  },
+  "rationale": "Superior conversational ability with RBAC enforcement and dual-mode operation for generation and editing",
+  "integrationPoints": {
+    "handoffAgents": [
+      "Document Selection Agent (after complete information gathering)"
+    ],
+    "dataStores": {
+      "redis": "Conversation history and session state",
+      "rbacStore": "User profiles and access control policies"
+    }
+  },
+  "examples": {
+    "generationModeInput": {
+      "sessionId": "session_789",
+      "userId": "user_456",
+      "messageId": "msg_001",
+      "userMessage": "I need to create a presentation about Q3 operational performance",
+      "cycleType": "generation",
+      "userProfile": {
+        "userId": "user_456",
+        "name": "John Doe",
+        "role": "senior_analyst",
+        "department": "operations",
+        "accessScopes": ["operational_data", "internal_metrics"],
+        "permissions": {
+          "viewFinancialData": false,
+          "viewOperationalData": true,
+          "viewHRData": false,
+          "viewSalesData": false,
+          "viewConfidentialData": false
+        }
+      },
+      "accessibleDocuments": [
+        {
+          "documentId": "doc_001",
+          "documentName": "Q3_Operations_Report.pdf",
+          "docType": "operations_report",
+          "department": "operations",
+          "accessLevel": "internal",
+          "summary": "Q3 operational metrics and KPIs",
+          "tags": ["operations", "Q3", "performance"],
+          "topics": ["efficiency", "productivity"]
+        }
+      ]
+    },
+    "generationModeOutput": {
+      "sessionId": "session_789",
+      "messageId": "msg_002",
+      "response": "Hi John! I'd be happy to help you create an operational performance presentation. What specific metrics would you like to highlight?",
+      "isComplete": false,
+      "extractedInformation": {
+        "presentationRequirements": {
+          "topic": "Q3 operational performance",
+          "targetAudience": null,
+          "numSlides": 10,
+          "keyThemes": ["operational performance", "Q3 results"],
+          "tone": null,
+          "objectives": null
+        },
+        "dataRequirements": {
+          "documentsRequested": ["Q3_Operations_Report.pdf"],
+          "contentToExtract": [],
+          "metrics": [],
+          "timePeriods": ["Q3 2024"],
+          "comparisons": [],
+          "dataCategories": ["operational"]
+        },
+        "visualPreferences": {
+          "chartTypes": [],
+          "style": null,
+          "includeImages": null,
+          "colorScheme": null
+        },
+        "editingRequirements": null
+      },
+      "rbacValidation": {
+        "validationResult": "allowed",
+        "allowedItems": ["operational_data", "Q3_Operations_Report.pdf"],
+        "deniedItems": [],
+        "explanation": "All requested data aligns with user's operational analyst role and permissions",
+        "suggestedAlternatives": [],
+        "professionalMessage": null
+      },
+      "rbacConcerns": [],
+      "missingInformation": [
+        "target_audience",
+        "key_objectives",
+        "specific_metrics",
+        "visual_preferences",
+        "tone"
+      ],
+      "confidenceScore": 0.3,
+      "conversationState": "gathering",
+      "nextAction": "continue_conversation",
+      "handoffToAgent": null,
+      "rbacWarnings": [],
+      "suggestedDocuments": ["Q3_Operations_Report.pdf"],
+      "timestamp": "2025-10-18T10:30:00Z"
+    },
+    "editingModeInput": {
+      "sessionId": "session_790",
+      "userId": "user_456",
+      "messageId": "msg_050",
+      "userMessage": "Can you make slide 3 more focused on efficiency metrics instead of productivity?",
+      "cycleType": "editing",
+      "userProfile": {
+        "userId": "user_456",
+        "name": "John Doe",
+        "role": "senior_analyst",
+        "department": "operations",
+        "accessScopes": ["operational_data", "internal_metrics"],
+        "permissions": {
+          "viewFinancialData": false,
+          "viewOperationalData": true,
+          "viewHRData": false,
+          "viewSalesData": false,
+          "viewConfidentialData": false
+        }
+      },
+      "accessibleDocuments": [],
+      "editingContext": {
+        "isEditing": true,
+        "previousResponse": {
+          "presentationId": "pres_123",
+          "generatedContent": {},
+          "presentationOutline": {
+            "slides": [
+              {"slideNumber": 3, "title": "Productivity Overview", "content": "..."}
+            ]
+          },
+          "slideContent": []
+        },
+        "editQuery": "make slide 3 more focused on efficiency metrics instead of productivity",
+        "targetSlide": 3,
+        "editType": "content"
+      }
+    },
+    "editingModeOutput": {
+      "sessionId": "session_790",
+      "messageId": "msg_051",
+      "response": "I'll update slide 3 to focus on efficiency metrics. I'll replace the productivity content with efficiency KPIs from your Q3 operations report.",
+      "isComplete": true,
+      "extractedInformation": {
+        "presentationRequirements": null,
+        "dataRequirements": {
+          "documentsRequested": [],
+          "contentToExtract": ["efficiency metrics"],
+          "metrics": ["efficiency KPIs"],
+          "timePeriods": ["Q3"],
+          "comparisons": [],
+          "dataCategories": ["operational"]
+        },
+        "visualPreferences": null,
+        "editingRequirements": {
+          "editType": "content",
+          "targetSlide": 3,
+          "specificChanges": [
+            "Replace productivity content with efficiency metrics",
+            "Update slide title to 'Efficiency Overview'",
+            "Include efficiency KPIs from Q3 report"
+          ],
+          "editScope": "single_slide"
+        }
+      },
+      "rbacValidation": {
+        "validationResult": "allowed",
+        "allowedItems": ["efficiency metrics", "operational_data"],
+        "deniedItems": [],
+        "explanation": "Efficiency metrics are within operational data scope",
+        "suggestedAlternatives": [],
+        "professionalMessage": null
+      },
+      "rbacConcerns": [],
+      "missingInformation": [],
+      "confidenceScore": 0.95,
+      "conversationState": "complete",
+      "nextAction": "handoff_to_content_agent",
+      "handoffToAgent": "Content Agent",
+      "rbacWarnings": [],
+      "suggestedDocuments": [],
+      "timestamp": "2025-10-18T11:45:00Z"
+    }
+  }
+}

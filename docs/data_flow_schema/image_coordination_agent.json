@@ -1,0 +1,899 @@
+{
+  "agentName": "Image Coordination Agent",
+  "primaryFunction": "Generate interactive Plotly visualizations and coordinate visual elements for presentation slides based on content and user preferences for both generation and editing cycles",
+  "llmSelection": "GPT-4.1",
+  "performanceTargets": {
+    "responseTime": "<2s per visualization",
+    "accuracyTarget": "90% visual relevance",
+    "visualQuality": "95% data accuracy in charts"
+  },
+  "dataFlow": {
+    "inputSchema": {
+      "sessionId": "string",
+      "userId": "string",
+      "imageCoordinationId": "string",
+      "cycleType": "enum: ['generation', 'editing']",
+      "expandedContent": {
+        "presentationTitle": "string",
+        "totalSlides": "number",
+        "slides": [
+          {
+            "slideNumber": "number",
+            "slideType": "string",
+            "title": "string",
+            "content": {
+              "mainText": "string",
+              "bulletPoints": ["array of bullet point objects"],
+              "dataVisualizations": [
+                {
+                  "visualizationId": "string",
+                  "visualType": "enum: ['bar_chart', 'line_chart', 'pie_chart', 'area_chart', 'scatter_plot', 'table', 'gauge', 'heatmap']",
+                  "title": "string",
+                  "data": {
+                    "labels": ["array of strings"],
+                    "datasets": [
+                      {
+                        "label": "string",
+                        "values": ["array of numbers"],
+                        "metadata": "object or null"
+                      }
+                    ]
+                  },
+                  "sourceQueryIds": ["array of query IDs"],
+                  "chartConfiguration": {
+                    "xAxisLabel": "string or null",
+                    "yAxisLabel": "string or null",
+                    "colorScheme": "string or null"
+                  }
+                }
+              ],
+              "citations": ["array of citation objects"]
+            },
+            "speakerNotes": "string"
+          }
+        ]
+      },
+      "visualPreferences": {
+          "chartTypes": ["array of chart types"],
+          "style": "string or null",
+          "includeImages": "boolean or null",
+          "colorScheme": "string or null"
+      },
+      "visualizationTools": {
+        "plotly": {
+          "enabled": "boolean (default: true)",
+          "version": "string (e.g., 'plotly.js v2.x')",
+          "exportFormat": "enum: ['html', 'json'] (default: 'html')"
+        },
+        "matplotlib": {
+          "enabled": "boolean (default: false)",
+          "convertToPlotly": "boolean (default: true if enabled)"
+        },
+        "seaborn": {
+          "enabled": "boolean (default: false)",
+          "convertToPlotly": "boolean (default: true if enabled)"
+        }
+      },
+      "editingContext": {
+        "isEditing": "boolean",
+        "targetSlidesForVisualization": ["array of slide numbers to generate/regenerate visuals"],
+        "previousVisuals": {
+          "imageCoordinationId": "string or null",
+          "generatedVisuals": [
+            {
+              "slideNumber": "number",
+              "visualizationId": "string",
+              "plotlyHtml": "string",
+              "visualType": "string"
+            }
+          ]
+        },
+        "preserveOtherVisuals": "boolean (default: true)"
+      },
+      "timestamp": "string (ISO 8601)"
+    },
+
+    "outputSchema": {
+      "sessionId": "string",
+      "userId": "string",
+      "imageCoordinationId": "string",
+      "cycleType": "enum: ['generation', 'editing']",
+      "generatedVisuals": [
+        {
+          "slideNumber": "number",
+          "visualizationId": "string",
+          "visualType": "enum: ['bar_chart', 'line_chart', 'pie_chart', 'area_chart', 'scatter_plot', 'table', 'gauge', 'heatmap']",
+          "title": "string",
+          "plotlyConfig": {
+            "data": [
+              {
+                "type": "string (e.g., 'bar', 'scatter', 'pie')",
+                "x": ["array of x-axis values or null"],
+                "y": ["array of y-axis values or null"],
+                "labels": ["array of labels for pie/donut or null"],
+                "values": ["array of values for pie/donut or null"],
+                "name": "string (series name)",
+                "marker": {
+                  "color": "string or array (colors)",
+                  "line": "object or null"
+                },
+                "text": ["array of text labels or null"],
+                "textposition": "string or null",
+                "hovertemplate": "string or null",
+                "mode": "string or null (for scatter: 'lines', 'markers', 'lines+markers')"
+              }
+            ],
+            "layout": {
+              "title": {
+                "text": "string",
+                "font": {
+                  "size": "number",
+                  "family": "string",
+                  "color": "string"
+                }
+              },
+              "xaxis": {
+                "title": "string or null",
+                "showgrid": "boolean",
+                "zeroline": "boolean",
+                "tickformat": "string or null"
+              },
+              "yaxis": {
+                "title": "string or null",
+                "showgrid": "boolean",
+                "zeroline": "boolean",
+                "tickformat": "string or null"
+              },
+              "showlegend": "boolean",
+              "legend": {
+                "orientation": "string",
+                "x": "number",
+                "y": "number"
+              },
+              "hovermode": "string",
+              "plot_bgcolor": "string",
+              "paper_bgcolor": "string",
+              "font": {
+                "family": "string",
+                "size": "number",
+                "color": "string"
+              },
+              "margin": {
+                "l": "number",
+                "r": "number",
+                "t": "number",
+                "b": "number"
+              },
+              "height": "number or null",
+              "width": "number or null"
+            },
+            "config": {
+              "responsive": "boolean",
+              "displayModeBar": "boolean",
+              "displaylogo": "boolean",
+              "modeBarButtonsToRemove": ["array of strings"]
+            }
+          },
+          "plotlyHtml": "string (complete standalone HTML with embedded Plotly chart)",
+          "plotlyJson": "string (JSON representation of the Plotly figure)",
+          "altText": "string (descriptive text for accessibility)",
+          "dataSource": {
+            "sourceQueryIds": ["array of query IDs"],
+            "dataPoints": "number (count of data points in visualization)"
+          },
+          "visualMetadata": {
+            "generatedAt": "string (ISO 8601)",
+            "toolUsed": "enum: ['plotly', 'matplotlib_converted', 'seaborn_converted']",
+            "interactivity": "boolean",
+            "colorScheme": "string",
+            "accessibility": {
+              "colorBlindFriendly": "boolean",
+              "altTextProvided": "boolean"
+            }
+          }
+        }
+      ],
+      "visualizationSummary": {
+        "totalVisualizationsGenerated": "number",
+        "visualizationsByType": {
+          "bar_chart": "number",
+          "line_chart": "number",
+          "pie_chart": "number",
+          "area_chart": "number",
+          "scatter_plot": "number",
+          "table": "number",
+          "gauge": "number",
+          "heatmap": "number"
+        },
+        "averageGenerationTime": "string (e.g., '1.5s per chart')",
+        "editingMetadata": {
+          "visualsRegenerated": ["array of visualization IDs regenerated"],
+          "visualsPreserved": ["array of visualization IDs preserved"],
+          "visualChangeSummary": "string or null"
+        }
+      },
+      "qualityMetrics": {
+        "visualRelevanceScore": "number (0.0-1.0)",
+        "dataAccuracyScore": "number (0.0-1.0)",
+        "accessibilityScore": "number (0.0-1.0)",
+        "styleConsistency": "number (0.0-1.0)"
+      },
+      "nextAction": "enum: ['proceed_to_format_agent', 'regenerate_visuals', 'approved']",
+      "handoffToAgent": "string or null",
+      "timestamp": "string (ISO 8601)"
+    },
+
+    "visualizationGenerationLogic": {
+      "generationMode": {
+        "description": "Generate all visualizations for presentation slides",
+        "steps": [
+          "1. Process each slide sequentially",
+          "2. For each dataVisualization in slide content:",
+          "3.   Extract visualization requirements (type, data, config)",
+          "4.   Map data to appropriate Plotly chart format",
+          "5.   Apply color scheme and style preferences",
+          "6.   Generate Plotly configuration (data + layout + config)",
+          "7.   Render Plotly chart to standalone HTML",
+          "8.   Generate alt text for accessibility",
+          "9.   Store Plotly HTML and JSON",
+          "10. Return all generated visuals with metadata"
+        ],
+        "chartTypeMapping": {
+          "bar_chart": {
+            "plotlyType": "bar",
+            "dataMapping": "labels → x-axis, values → y-axis",
+            "bestFor": "Comparing categories, showing rankings"
+          },
+          "line_chart": {
+            "plotlyType": "scatter with mode='lines' or 'lines+markers'",
+            "dataMapping": "labels → x-axis (time series), values → y-axis",
+            "bestFor": "Showing trends over time, time series data"
+          },
+          "pie_chart": {
+            "plotlyType": "pie",
+            "dataMapping": "labels → slice labels, values → slice sizes",
+            "bestFor": "Showing composition, percentages of whole"
+          },
+          "area_chart": {
+            "plotlyType": "scatter with fill='tozeroy' or 'tonexty'",
+            "dataMapping": "labels → x-axis, values → y-axis with fill",
+            "bestFor": "Showing cumulative values, stacked data over time"
+          },
+          "scatter_plot": {
+            "plotlyType": "scatter with mode='markers'",
+            "dataMapping": "x values → x-axis, y values → y-axis",
+            "bestFor": "Showing correlation, distribution patterns"
+          },
+          "table": {
+            "plotlyType": "table",
+            "dataMapping": "headers → column headers, rows → table data",
+            "bestFor": "Detailed data presentation, multiple dimensions"
+          },
+          "gauge": {
+            "plotlyType": "indicator with mode='gauge+number'",
+            "dataMapping": "value → gauge reading, max → gauge range",
+            "bestFor": "Single metric with target/threshold"
+          },
+          "heatmap": {
+            "plotlyType": "heatmap",
+            "dataMapping": "2D array → color intensity matrix",
+            "bestFor": "Correlation matrices, intensity patterns"
+          }
+        }
+      },
+      "editingMode": {
+        "description": "Regenerate visualizations for edited slides only",
+        "steps": [
+          "1. Identify target slides from editingContext",
+          "2. Preserve visuals for non-target slides from previousVisuals",
+          "3. For target slides, regenerate visualizations using updated content",
+          "4. Ensure style consistency with preserved visuals",
+          "5. Maintain color scheme and accessibility standards",
+          "6. Return regenerated visuals with preservation metadata"
+        ],
+        "optimizations": [
+          "Reuse visual configurations when slide content unchanged",
+          "Only regenerate when data or visualization type changed",
+          "Maintain consistent styling across edited and preserved visuals"
+        ]
+      }
+    },
+
+    "plotlyConfiguration": {
+      "description": "Standard Plotly configuration for professional presentation visuals",
+      "colorSchemes": {
+        "blue-green": {
+          "primary": ["#1f77b4", "#2ca02c", "#17becf", "#bcbd22"],
+          "description": "Blue and green tones for data-focused presentations"
+        },
+        "corporate-blue": {
+          "primary": ["#003f5c", "#2f4b7c", "#665191", "#a05195"],
+          "description": "Professional blue gradient for corporate presentations"
+        },
+        "warm": {
+          "primary": ["#d45087", "#f95d6a", "#ff7c43", "#ffa600"],
+          "description": "Warm colors for engaging, energetic presentations"
+        },
+        "cool": {
+          "primary": ["#003f5c", "#58508d", "#bc5090", "#ff6361"],
+          "description": "Cool colors for calm, professional presentations"
+        },
+        "monochrome": {
+          "primary": ["#2c3e50", "#34495e", "#7f8c8d", "#95a5a6"],
+          "description": "Grayscale for minimal, sophisticated presentations"
+        },
+        "colorblind-friendly": {
+          "primary": ["#0173B2", "#DE8F05", "#029E73", "#CC78BC"],
+          "description": "Optimized for color vision deficiency accessibility"
+        }
+      },
+      "defaultLayout": {
+        "font": {
+          "family": "Arial, sans-serif",
+          "size": 14,
+          "color": "#333333"
+        },
+        "title": {
+          "font": {
+            "size": 18,
+            "family": "Arial, sans-serif",
+            "color": "#1f1f1f"
+          }
+        },
+        "showlegend": true,
+        "legend": {
+          "orientation": "h",
+          "x": 0,
+          "y": -0.2
+        },
+        "hovermode": "closest",
+        "plot_bgcolor": "#ffffff",
+        "paper_bgcolor": "#ffffff",
+        "margin": {
+          "l": 60,
+          "r": 40,
+          "t": 80,
+          "b": 60
+        }
+      },
+      "defaultConfig": {
+        "responsive": true,
+        "displayModeBar": true,
+        "displaylogo": false,
+        "modeBarButtonsToRemove": ["lasso2d", "select2d"]
+      },
+      "accessibilityFeatures": {
+        "altTextGeneration": {
+          "description": "Generate descriptive alt text for each chart",
+          "template": "{chart_type} showing {data_description}. {key_insights}",
+          "example": "Bar chart showing Q3 2024 department efficiency rates. Manufacturing leads at 91.2%, followed by Quality Control at 89.8%, Logistics at 85.4%, and Maintenance at 82.7%."
+        },
+        "colorBlindFriendlyPalette": {
+          "enabled": "Use when visualPreferences.accessibility.colorBlindFriendly = true",
+          "palette": "colorblind-friendly scheme"
+        },
+        "highContrast": {
+          "enabled": "Use when visualPreferences.accessibility.highContrast = true",
+          "modifications": "Increase contrast ratios, use bold lines, larger markers"
+        }
+      }
+    },
+
+    "htmlGeneration": {
+      "description": "Generate standalone HTML with embedded Plotly chart",
+      "htmlTemplate": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <script src=\"https://cdn.plot.ly/plotly-2.27.0.min.js\"></script>\n</head>\n<body>\n  <div id=\"{visualization_id}\" style=\"width:100%;height:100%;\"></div>\n  <script>\n    var data = {plotly_data};\n    var layout = {plotly_layout};\n    var config = {plotly_config};\n    Plotly.newPlot('{visualization_id}', data, layout, config);\n  </script>\n</body>\n</html>",
+      "embeddingInstructions": "This HTML can be embedded in presentation slides using iframe or directly injected into HTML slides"
+    },
+
+    "cycleModes": {
+      "generationMode": {
+        "description": "Generate all visualizations for presentation",
+        "activeFields": [
+          "expandedContent (all slides with dataVisualizations)",
+          "visualPreferences"
+        ],
+        "ignoredFields": [
+          "editingContext"
+        ],
+        "behavior": "Process all slides, generate Plotly visualizations for every dataVisualization object"
+      },
+      "editingMode": {
+        "description": "Regenerate visualizations for edited slides only",
+        "activeFields": [
+          "expandedContent (edited slides only)",
+          "visualPreferences",
+          "editingContext"
+        ],
+        "requiredFields": [
+          "editingContext.targetSlidesForVisualization",
+          "editingContext.previousVisuals"
+        ],
+        "behavior": "Regenerate visuals for target slides, preserve others, maintain consistency"
+      }
+    }
+  },
+
+  "rationale": "Best prompt engineering for visuals with GPT-4.1 for generating precise Plotly configurations and professional interactive charts",
+
+  "integrationPoints": {
+    "inputFrom": [
+      "Content Agent (expanded content with dataVisualizations)",
+      "Conversation Agent (visual preferences)"
+    ],
+    "handoffAgents": [
+      "Format Agent (to embed visuals in final HTML presentation)"
+    ],
+    "dataStores": {
+      "redis": "Cache generated visualizations for editing and reuse"
+    },
+    "externalLibraries": {
+      "plotly": "Plotly.js for interactive chart generation",
+      "cdn": "https://cdn.plot.ly/plotly-2.27.0.min.js"
+    }
+  },
+
+  "examples": {
+    "generationModeInput": {
+      "sessionId": "session_789",
+      "userId": "user_456",
+      "imageCoordinationId": "img_001",
+      "cycleType": "generation",
+      "expandedContent": {
+        "presentationTitle": "Q3 2024 Operational Performance Review",
+        "totalSlides": 10,
+        "slides": [
+          {
+            "slideNumber": 3,
+            "slideType": "data_slide",
+            "title": "Key Performance Indicators: Q3 2024",
+            "content": {
+              "mainText": "Q3 2024 delivered exceptional performance...",
+              "bulletPoints": [],
+              "dataVisualizations": [
+                {
+                  "visualizationId": "viz_003_001",
+                  "visualType": "bar_chart",
+                  "title": "Q2 vs Q3 2024 KPI Comparison",
+                  "data": {
+                    "labels": ["Efficiency Rate (%)", "Productivity Index", "Cost per Unit ($)"],
+                    "datasets": [
+                      {
+                        "label": "Q2 2024",
+                        "values": [78.1, 118.2, 49.10],
+                        "metadata": {"color": "#6B7280"}
+                      },
+                      {
+                        "label": "Q3 2024",
+                        "values": [87.3, 124.5, 45.20],
+                        "metadata": {"color": "#10B981"}
+                      }
+                    ]
+                  },
+                  "sourceQueryIds": ["query_002"],
+                  "chartConfiguration": {
+                    "xAxisLabel": "Key Performance Indicators",
+                    "yAxisLabel": "Values",
+                    "colorScheme": "blue-green"
+                  }
+                }
+              ],
+              "citations": []
+            },
+            "speakerNotes": "Walk through each KPI..."
+          }
+        ]
+      },
+      "visualPreferences": {
+        "chartTypes": ["bar_chart", "line_chart"],
+        "style": "professional",
+        "includeImages": true,
+        "colorScheme": "blue-green",
+        "interactivity": true,
+        "accessibility": {
+          "includeAltText": true,
+          "colorBlindFriendly": true,
+          "highContrast": false
+        }
+      },
+      "visualizationTools": {
+        "plotly": {
+          "enabled": true,
+          "version": "plotly.js v2.27",
+          "exportFormat": "html"
+        },
+        "matplotlib": {
+          "enabled": false,
+          "convertToPlotly": false
+        },
+        "seaborn": {
+          "enabled": false,
+          "convertToPlotly": false
+        }
+      },
+      "editingContext": {
+        "isEditing": false,
+        "targetSlidesForVisualization": [],
+        "previousVisuals": null,
+        "preserveOtherVisuals": true
+      },
+      "timestamp": "2025-10-18T10:35:20Z"
+    },
+
+    "generationModeOutput": {
+      "sessionId": "session_789",
+      "userId": "user_456",
+      "imageCoordinationId": "img_001",
+      "cycleType": "generation",
+      "generatedVisuals": [
+        {
+          "slideNumber": 3,
+          "visualizationId": "viz_003_001",
+          "visualType": "bar_chart",
+          "title": "Q2 vs Q3 2024 KPI Comparison",
+          "plotlyConfig": {
+            "data": [
+              {
+                "type": "bar",
+                "x": ["Efficiency Rate (%)", "Productivity Index", "Cost per Unit ($)"],
+                "y": [78.1, 118.2, 49.10],
+                "name": "Q2 2024",
+                "marker": {
+                  "color": "#6B7280",
+                  "line": {
+                    "color": "#4B5563",
+                    "width": 1
+                  }
+                },
+                "text": [78.1, 118.2, 49.10],
+                "textposition": "outside",
+                "hovertemplate": "<b>%{x}</b><br>Q2 2024: %{y}<extra></extra>"
+              },
+              {
+                "type": "bar",
+                "x": ["Efficiency Rate (%)", "Productivity Index", "Cost per Unit ($)"],
+                "y": [87.3, 124.5, 45.20],
+                "name": "Q3 2024",
+                "marker": {
+                  "color": "#10B981",
+                  "line": {
+                    "color": "#059669",
+                    "width": 1
+                  }
+                },
+                "text": [87.3, 124.5, 45.20],
+                "textposition": "outside",
+                "hovertemplate": "<b>%{x}</b><br>Q3 2024: %{y}<extra></extra>"
+              }
+            ],
+            "layout": {
+              "title": {
+                "text": "Q2 vs Q3 2024 KPI Comparison",
+                "font": {
+                  "size": 18,
+                  "family": "Arial, sans-serif",
+                  "color": "#1f1f1f"
+                }
+              },
+              "xaxis": {
+                "title": "Key Performance Indicators",
+                "showgrid": false,
+                "zeroline": false,
+                "tickfont": {
+                  "size": 12
+                }
+              },
+              "yaxis": {
+                "title": "Values",
+                "showgrid": true,
+                "zeroline": true,
+                "gridcolor": "#E5E7EB",
+                "tickfont": {
+                  "size": 12
+                }
+              },
+              "showlegend": true,
+              "legend": {
+                "orientation": "h",
+                "x": 0.3,
+                "y": -0.15,
+                "font": {
+                  "size": 12
+                }
+              },
+              "hovermode": "closest",
+              "plot_bgcolor": "#ffffff",
+              "paper_bgcolor": "#ffffff",
+              "font": {
+                "family": "Arial, sans-serif",
+                "size": 14,
+                "color": "#333333"
+              },
+              "margin": {
+                "l": 60,
+                "r": 40,
+                "t": 100,
+                "b": 80
+              },
+              "barmode": "group",
+              "bargap": 0.15,
+              "bargroupgap": 0.1
+            },
+            "config": {
+              "responsive": true,
+              "displayModeBar": true,
+              "displaylogo": false,
+              "modeBarButtonsToRemove": ["lasso2d", "select2d", "pan2d", "zoom2d", "zoomIn2d", "zoomOut2d", "autoScale2d"]
+            }
+          },
+          "plotlyHtml": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <script src=\"https://cdn.plot.ly/plotly-2.27.0.min.js\"></script>\n</head>\n<body>\n  <div id=\"viz_003_001\" style=\"width:100%;height:100%;\"></div>\n  <script>\n    var data = [{\"type\":\"bar\",\"x\":[\"Efficiency Rate (%)\",\"Productivity Index\",\"Cost per Unit ($)\"],\"y\":[78.1,118.2,49.10],\"name\":\"Q2 2024\",\"marker\":{\"color\":\"#6B7280\",\"line\":{\"color\":\"#4B5563\",\"width\":1}},\"text\":[78.1,118.2,49.10],\"textposition\":\"outside\",\"hovertemplate\":\"<b>%{x}</b><br>Q2 2024: %{y}<extra></extra>\"},{\"type\":\"bar\",\"x\":[\"Efficiency Rate (%)\",\"Productivity Index\",\"Cost per Unit ($)\"],\"y\":[87.3,124.5,45.20],\"name\":\"Q3 2024\",\"marker\":{\"color\":\"#10B981\",\"line\":{\"color\":\"#059669\",\"width\":1}},\"text\":[87.3,124.5,45.20],\"textposition\":\"outside\",\"hovertemplate\":\"<b>%{x}</b><br>Q3 2024: %{y}<extra></extra>\"}];\n    var layout = {\"title\":{\"text\":\"Q2 vs Q3 2024 KPI Comparison\",\"font\":{\"size\":18,\"family\":\"Arial, sans-serif\",\"color\":\"#1f1f1f\"}},\"xaxis\":{\"title\":\"Key Performance Indicators\",\"showgrid\":false,\"zeroline\":false,\"tickfont\":{\"size\":12}},\"yaxis\":{\"title\":\"Values\",\"showgrid\":true,\"zeroline\":true,\"gridcolor\":\"#E5E7EB\",\"tickfont\":{\"size\":12}},\"showlegend\":true,\"legend\":{\"orientation\":\"h\",\"x\":0.3,\"y\":-0.15,\"font\":{\"size\":12}},\"hovermode\":\"closest\",\"plot_bgcolor\":\"#ffffff\",\"paper_bgcolor\":\"#ffffff\",\"font\":{\"family\":\"Arial, sans-serif\",\"size\":14,\"color\":\"#333333\"},\"margin\":{\"l\":60,\"r\":40,\"t\":100,\"b\":80},\"barmode\":\"group\",\"bargap\":0.15,\"bargroupgap\":0.1};\n    var config = {\"responsive\":true,\"displayModeBar\":true,\"displaylogo\":false,\"modeBarButtonsToRemove\":[\"lasso2d\",\"select2d\",\"pan2d\",\"zoom2d\",\"zoomIn2d\",\"zoomOut2d\",\"autoScale2d\"]};\n    Plotly.newPlot('viz_003_001', data, layout, config);\n  </script>\n</body>\n</html>",
+          "plotlyJson": "{\"data\":[{\"type\":\"bar\",\"x\":[\"Efficiency Rate (%)\",\"Productivity Index\",\"Cost per Unit ($)\"],\"y\":[78.1,118.2,49.10],\"name\":\"Q2 2024\",\"marker\":{\"color\":\"#6B7280\"}},{\"type\":\"bar\",\"x\":[\"Efficiency Rate (%)\",\"Productivity Index\",\"Cost per Unit ($)\"],\"y\":[87.3,124.5,45.20],\"name\":\"Q3 2024\",\"marker\":{\"color\":\"#10B981\"}}],\"layout\":{\"title\":\"Q2 vs Q3 2024 KPI Comparison\",\"xaxis\":{\"title\":\"Key Performance Indicators\"},\"yaxis\":{\"title\":\"Values\"}}}",
+          "altText": "Bar chart comparing Q2 2024 and Q3 2024 key performance indicators. Shows three metrics: Efficiency Rate improved from 78.1% to 87.3%, Productivity Index increased from 118.2 to 124.5, and Cost per Unit decreased from $49.10 to $45.20. All three metrics show favorable trends in Q3.",
+          "dataSource": {
+            "sourceQueryIds": ["query_002"],
+            "dataPoints": 6
+          },
+          "visualMetadata": {
+            "generatedAt": "2025-10-18T10:35:22Z",
+            "toolUsed": "plotly",
+            "interactivity": true,
+            "colorScheme": "blue-green",
+            "accessibility": {
+              "colorBlindFriendly": true,
+              "altTextProvided": true
+            }
+          }
+        }
+      ],
+      "visualizationSummary": {
+        "totalVisualizationsGenerated": 1,
+        "visualizationsByType": {
+          "bar_chart": 1,
+          "line_chart": 0,
+          "pie_chart": 0,
+          "area_chart": 0,
+          "scatter_plot": 0,
+          "table": 0,
+          "gauge": 0,
+          "heatmap": 0
+        },
+        "averageGenerationTime": "1.8s per chart",
+        "editingMetadata": null
+      },
+      "qualityMetrics": {
+        "visualRelevanceScore": 0.95,
+        "dataAccuracyScore": 1.0,
+        "accessibilityScore": 0.98,
+        "styleConsistency": 1.0
+      },
+      "nextAction": "proceed_to_format_agent",
+      "handoffToAgent": "Format Agent",
+      "timestamp": "2025-10-18T10:35:22Z"
+    },
+
+    "editingModeInput": {
+      "sessionId": "session_790",
+      "userId": "user_456",
+      "imageCoordinationId": "img_050",
+      "cycleType": "editing",
+      "expandedContent": {
+        "presentationTitle": "Q3 2024 Operational Performance Review",
+        "totalSlides": 10,
+        "slides": [
+          {
+            "slideNumber": 3,
+            "slideType": "data_slide",
+            "title": "Department Efficiency Breakdown: Q3 2024",
+            "content": {
+              "mainText": "Q3 2024 demonstrated strong efficiency...",
+              "bulletPoints": [],
+              "dataVisualizations": [
+                {
+                  "visualizationId": "viz_003_050",
+                  "visualType": "bar_chart",
+                  "title": "Department Efficiency Rates - Q3 2024",
+                  "data": {
+                    "labels": ["Manufacturing", "Quality Control", "Logistics", "Maintenance"],
+                    "datasets": [
+                      {
+                        "label": "Q3 2024 Efficiency (%)",
+                        "values": [91.2, 89.8, 85.4, 82.7],
+                        "metadata": {"color": "#10B981"}
+                      }
+                    ]
+                  },
+                  "sourceQueryIds": ["query_050"],
+                  "chartConfiguration": {
+                    "xAxisLabel": "Departments",
+                    "yAxisLabel": "Efficiency Rate (%)",
+                    "colorScheme": "blue-green"
+                  }
+                }
+              ],
+              "citations": []
+            },
+            "speakerNotes": "Highlight Manufacturing's leadership..."
+          }
+        ]
+      },
+      "visualPreferences": {
+        "chartTypes": ["bar_chart"],
+        "style": "professional",
+        "includeImages": true,
+        "colorScheme": "blue-green",
+        "interactivity": true,
+        "accessibility": {
+          "includeAltText": true,
+          "colorBlindFriendly": true,
+          "highContrast": false
+        }
+      },
+      "visualizationTools": {
+        "plotly": {
+          "enabled": true,
+          "version": "plotly.js v2.27",
+          "exportFormat": "html"
+        },
+        "matplotlib": {
+          "enabled": false,
+          "convertToPlotly": false
+        },
+        "seaborn": {
+          "enabled": false,
+          "convertToPlotly": false
+        }
+      },
+      "editingContext": {
+        "isEditing": true,
+        "targetSlidesForVisualization": [3],
+        "previousVisuals": {
+          "imageCoordinationId": "img_001",
+          "generatedVisuals": [
+            {
+              "slideNumber": 1,
+              "visualizationId": "viz_001_001",
+              "plotlyHtml": "<!-- Title slide visual -->",
+              "visualType": "image"
+            },
+            {
+              "slideNumber": 2,
+              "visualizationId": "viz_002_001",
+              "plotlyHtml": "<!-- Overview slide visual -->",
+              "visualType": "bar_chart"
+            }
+          ]
+        },
+        "preserveOtherVisuals": true
+      },
+      "timestamp": "2025-10-18T11:45:16Z"
+    },
+
+    "editingModeOutput": {
+      "sessionId": "session_790",
+      "userId": "user_456",
+      "imageCoordinationId": "img_050",
+      "cycleType": "editing",
+      "generatedVisuals": [
+        {
+          "slideNumber": 3,
+          "visualizationId": "viz_003_050",
+          "visualType": "bar_chart",
+          "title": "Department Efficiency Rates - Q3 2024",
+          "plotlyConfig": {
+            "data": [
+              {
+                "type": "bar",
+                "x": ["Manufacturing", "Quality Control", "Logistics", "Maintenance"],
+                "y": [91.2, 89.8, 85.4, 82.7],
+                "name": "Q3 2024 Efficiency (%)",
+                "marker": {
+                  "color": "#10B981",
+                  "line": {
+                    "color": "#059669",
+                    "width": 1
+                  }
+                },
+                "text": ["91.2%", "89.8%", "85.4%", "82.7%"],
+                "textposition": "outside",
+                "hovertemplate": "<b>%{x}</b><br>Efficiency: %{y}%<extra></extra>"
+              }
+            ],
+            "layout": {
+              "title": {
+                "text": "Department Efficiency Rates - Q3 2024",
+                "font": {
+                  "size": 18,
+                  "family": "Arial, sans-serif",
+                  "color": "#1f1f1f"
+                }
+              },
+              "xaxis": {
+                "title": "Departments",
+                "showgrid": false,
+                "zeroline": false,
+                "tickfont": {
+                  "size": 12
+                }
+              },
+              "yaxis": {
+                "title": "Efficiency Rate (%)",
+                "showgrid": true,
+                "zeroline": true,
+                "gridcolor": "#E5E7EB",
+                "range": [0, 100],
+                "tickfont": {
+                  "size": 12
+                }
+              },
+              "showlegend": false,
+              "hovermode": "closest",
+              "plot_bgcolor": "#ffffff",
+              "paper_bgcolor": "#ffffff",
+              "font": {
+                "family": "Arial, sans-serif",
+                "size": 14,
+                "color": "#333333"
+              },
+              "margin": {
+                "l": 60,
+                "r": 40,
+                "t": 100,
+                "b": 80
+              }
+            },
+            "config": {
+              "responsive": true,
+              "displayModeBar": true,
+              "displaylogo": false,
+              "modeBarButtonsToRemove": ["lasso2d", "select2d", "pan2d", "zoom2d", "zoomIn2d", "zoomOut2d", "autoScale2d"]
+            }
+          },
+          "plotlyHtml": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <script src=\"https://cdn.plot.ly/plotly-2.27.0.min.js\"></script>\n</head>\n<body>\n  <div id=\"viz_003_050\" style=\"width:100%;height:100%;\"></div>\n  <script>\n    var data = [{\"type\":\"bar\",\"x\":[\"Manufacturing\",\"Quality Control\",\"Logistics\",\"Maintenance\"],\"y\":[91.2,89.8,85.4,82.7],\"name\":\"Q3 2024 Efficiency (%)\",\"marker\":{\"color\":\"#10B981\",\"line\":{\"color\":\"#059669\",\"width\":1}},\"text\":[\"91.2%\",\"89.8%\",\"85.4%\",\"82.7%\"],\"textposition\":\"outside\",\"hovertemplate\":\"<b>%{x}</b><br>Efficiency: %{y}%<extra></extra>\"}];\n    var layout = {\"title\":{\"text\":\"Department Efficiency Rates - Q3 2024\",\"font\":{\"size\":18,\"family\":\"Arial, sans-serif\",\"color\":\"#1f1f1f\"}},\"xaxis\":{\"title\":\"Departments\",\"showgrid\":false,\"zeroline\":false,\"tickfont\":{\"size\":12}},\"yaxis\":{\"title\":\"Efficiency Rate (%)\",\"showgrid\":true,\"zeroline\":true,\"gridcolor\":\"#E5E7EB\",\"range\":[0,100],\"tickfont\":{\"size\":12}},\"showlegend\":false,\"hovermode\":\"closest\",\"plot_bgcolor\":\"#ffffff\",\"paper_bgcolor\":\"#ffffff\",\"font\":{\"family\":\"Arial, sans-serif\",\"size\":14,\"color\":\"#333333\"},\"margin\":{\"l\":60,\"r\":40,\"t\":100,\"b\":80}};\n    var config = {\"responsive\":true,\"displayModeBar\":true,\"displaylogo\":false,\"modeBarButtonsToRemove\":[\"lasso2d\",\"select2d\",\"pan2d\",\"zoom2d\",\"zoomIn2d\",\"zoomOut2d\",\"autoScale2d\"]};\n    Plotly.newPlot('viz_003_050', data, layout, config);\n  </script>\n</body>\n</html>",
+          "plotlyJson": "{\"data\":[{\"type\":\"bar\",\"x\":[\"Manufacturing\",\"Quality Control\",\"Logistics\",\"Maintenance\"],\"y\":[91.2,89.8,85.4,82.7],\"marker\":{\"color\":\"#10B981\"}}],\"layout\":{\"title\":\"Department Efficiency Rates - Q3 2024\",\"xaxis\":{\"title\":\"Departments\"},\"yaxis\":{\"title\":\"Efficiency Rate (%)\"}}}",
+          "altText": "Bar chart showing Q3 2024 department efficiency rates. Manufacturing leads with 91.2% efficiency, followed by Quality Control at 89.8%, Logistics at 85.4%, and Maintenance at 82.7%. All departments demonstrate strong performance above 80%.",
+          "dataSource": {
+            "sourceQueryIds": ["query_050"],
+            "dataPoints": 4
+          },
+          "visualMetadata": {
+            "generatedAt": "2025-10-18T11:45:17Z",
+            "toolUsed": "plotly",
+            "interactivity": true,
+            "colorScheme": "blue-green",
+            "accessibility": {
+              "colorBlindFriendly": true,
+              "altTextProvided": true
+            }
+          }
+        }
+      ],
+      "visualizationSummary": {
+        "totalVisualizationsGenerated": 1,
+        "visualizationsByType": {
+          "bar_chart": 1,
+          "line_chart": 0,
+          "pie_chart": 0,
+          "area_chart": 0,
+          "scatter_plot": 0,
+          "table": 0,
+          "gauge": 0,
+          "heatmap": 0
+        },
+        "averageGenerationTime": "1.5s per chart",
+        "editingMetadata": {
+          "visualsRegenerated": ["viz_003_050"],
+          "visualsPreserved": ["viz_001_001", "viz_002_001"],
+          "visualChangeSummary": "Regenerated slide 3 visualization with department efficiency breakdown, replacing previous KPI comparison chart"
+        }
+      },
+      "qualityMetrics": {
+        "visualRelevanceScore": 0.96,
+        "dataAccuracyScore": 1.0,
+        "accessibilityScore": 0.98,
+        "styleConsistency": 1.0
+      },
+      "nextAction": "proceed_to_format_agent",
+      "handoffToAgent": "Format Agent",
+      "timestamp": "2025-10-18T11:45:17Z"
+    }
+  }
+}
