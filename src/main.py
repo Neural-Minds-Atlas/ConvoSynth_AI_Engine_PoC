@@ -56,6 +56,21 @@ async def lifespan(app: FastAPI):
     workflow = SequentialWorkflow(rag_client=rag_client)
     logger.info("workflow_initialized", rag_client_provided=rag_client is not None)
 
+    # Initialize Outline Agent
+    try:
+        from src.api.routes.outline import initialize_outline_agent
+        initialize_outline_agent(
+            model_provider="claude",
+            model_name="claude-sonnet-4-20250514",
+            temperature=0.3,
+            max_tokens=8192,  # Increased for longer outlines
+            timeout=120,  # Increased timeout to 2 minutes
+            max_iterations=15  # Increased max iterations
+        )
+        logger.info("outline_agent_initialized")
+    except Exception as e:
+        logger.warning("outline_agent_init_failed", error=str(e))
+
     # Initialize MongoDB (from teammate's version)
     if settings.use_mongodb:
         try:
@@ -126,7 +141,7 @@ setup_auth_middleware(
 )
 
 # Import and register routes - merged from both versions
-from src.api.routes import health, rag, documents, chat, admin, agents, query_agent, document_selection
+from src.api.routes import health, rag, documents, chat, admin, agents, query_agent, document_selection, outline
 
 # Register all routes under /api/v1
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
@@ -136,7 +151,8 @@ app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
 app.include_router(admin.router, prefix="/api/v1", tags=["admin"])
 app.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])
 app.include_router(query_agent.router, prefix="/api/v1/agents", tags=["agents"])  # Query Agent routes
-app.include_router(document_selection.router, prefix="/api/v1/document-selection", tags=["document-selection"])  # Document Selection Agent routes
+app.include_router(document_selection.router, prefix="/api/v1/agents/document-selection")  # Document Selection Agent routes
+app.include_router(outline.router, prefix="/api/v1/agents")  # Outline Agent routes
 
 # MongoDB routes (from teammate's version - conditionally imported if enabled)
 if settings.use_mongodb:
@@ -175,9 +191,13 @@ async def root():
                 "conversation_generate": "/api/v1/agents/conversation-generate",
                 "conversation_edit": "/api/v1/agents/conversation-edit",
                 "query_agent": "/api/v1/agents/query-agent",
-                "document_selection": "/api/v1/document-selection/select-documents",
-                "metadata_corpus": "/api/v1/document-selection/metadata/corpus",
-                "metadata_search": "/api/v1/document-selection/metadata/search",
+                "document_selection": "/api/v1/agents/document-selection/select-documents",
+                "metadata_corpus": "/api/v1/agents/document-selection/metadata/corpus",
+                "metadata_search": "/api/v1/agents/document-selection/metadata/search",
+                "outline_generate": "/api/v1/agents/outline/generate",
+                "outline_edit": "/api/v1/agents/outline/edit",
+                "outline_validate": "/api/v1/agents/outline/validate",
+                "outline_health": "/api/v1/agents/outline/health",
                 "generate_presentation": "/api/v1/agents/generate-presentation",
                 "agents_info": "/api/v1/agents/info"
             }
