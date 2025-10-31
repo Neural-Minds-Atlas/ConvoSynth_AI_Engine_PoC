@@ -35,12 +35,6 @@
           "style": "string or null",
           "includeImages": "boolean or null",
           "colorScheme": "string or null"
-        },
-        "editingRequirements": {
-          "editType": "enum: ['content', 'structure', 'general'] or null",
-          "targetSlide": "number or null",
-          "specificChanges": ["array of requested changes"],
-          "editScope": "enum: ['single_slide_content', 'multiple_slides_content', 'entire_presentation_content'] or null"
         }
       },
       "queryResults": [
