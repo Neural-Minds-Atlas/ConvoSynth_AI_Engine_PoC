@@ -71,6 +71,14 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("outline_agent_init_failed", error=str(e))
 
+    # Initialize Content Agent
+    try:
+        from src.api.routes.content import initialize_content_agent
+        initialize_content_agent(rag_client=rag_client)
+        logger.info("content_agent_initialized")
+    except Exception as e:
+        logger.warning("content_agent_init_failed", error=str(e))
+
     # Initialize MongoDB (from teammate's version)
     if settings.use_mongodb:
         try:
@@ -141,18 +149,24 @@ setup_auth_middleware(
 )
 
 # Import and register routes - merged from both versions
-from src.api.routes import health, rag, documents, chat, admin, agents, query_agent, document_selection, outline
+from src.api.routes import health, rag, documents, chat, admin, agents, query_agent, document_selection, outline, content
 
 # Register all routes under /api/v1
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
-app.include_router(rag.router, prefix="/api/v1", tags=["rag"])
-app.include_router(documents.router, prefix="/api/v1/documents", tags=["documents"])
-app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
 app.include_router(admin.router, prefix="/api/v1", tags=["admin"])
-app.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])
-app.include_router(query_agent.router, prefix="/api/v1/agents", tags=["agents"])  # Query Agent routes
-app.include_router(document_selection.router, prefix="/api/v1/agents/document-selection")  # Document Selection Agent routes
-app.include_router(outline.router, prefix="/api/v1/agents")  # Outline Agent routes
+# app.include_router(rag.router, prefix="/api/v1", tags=["rag"])
+app.include_router(documents.router, prefix="/api/v1/documents", tags=["Documents Upload and RAG Ingestion"])
+app.include_router(chat.router, prefix="/api/v1", tags=["RAG Retrieval and Querying"])
+
+# Separate agent routes - each with its own Swagger heading
+# Note: agents.router is NOT registered separately to avoid duplicates
+# (it contains conversation routes which are already included via this router)
+app.include_router(agents.router, prefix="/api/v1/agents", tags=["Conversation Agent"])
+app.include_router(document_selection.router, prefix="/api/v1/agents/document-selection", tags=["Document Selection Agent"])
+app.include_router(query_agent.router, prefix="/api/v1/agents", tags=["Query Agent"])
+app.include_router(outline.router, prefix="/api/v1/agents", tags=["Outline Agent"])
+# Content router already has prefix="/api/v1/content" built-in, so no prefix needed here
+app.include_router(content.router)
 
 # MongoDB routes (from teammate's version - conditionally imported if enabled)
 if settings.use_mongodb:
@@ -198,6 +212,9 @@ async def root():
                 "outline_edit": "/api/v1/agents/outline/edit",
                 "outline_validate": "/api/v1/agents/outline/validate",
                 "outline_health": "/api/v1/agents/outline/health",
+                "content_generate": "/api/v1/content/generate",
+                "content_health": "/api/v1/content/health",
+                "content_test": "/api/v1/content/test",
                 "generate_presentation": "/api/v1/agents/generate-presentation",
                 "agents_info": "/api/v1/agents/info"
             }

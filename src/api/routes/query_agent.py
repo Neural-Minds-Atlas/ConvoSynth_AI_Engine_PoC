@@ -142,7 +142,7 @@ class QueryAgentResponse(BaseModel):
 
 # Endpoints
 
-@router.post("/query-agent", response_model=QueryAgentResponse, tags=["agents"])
+@router.post("/query-agent", response_model=QueryAgentResponse)
 async def query_agent_endpoint(
     query_request: QueryAgentRequest = Body(...)
 ):
@@ -263,7 +263,7 @@ async def query_agent_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/query-agent/reset", tags=["agents"])
+@router.post("/query-agent/reset")
 async def reset_query_agent(session_id: str = Body(..., embed=True)):
     """
     Reset Query Agent state for a session.
@@ -293,7 +293,7 @@ async def reset_query_agent(session_id: str = Body(..., embed=True)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/query-agent/session/{session_id}", tags=["agents"])
+@router.get("/query-agent/session/{session_id}")
 async def get_query_agent_session(session_id: str):
     """
     Get Query Agent session information.
@@ -325,7 +325,7 @@ async def get_query_agent_session(session_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/query-agent/session/{session_id}", tags=["agents"])
+@router.delete("/query-agent/session/{session_id}")
 async def delete_query_agent_session(session_id: str):
     """
     Delete Query Agent session.
@@ -354,7 +354,7 @@ async def delete_query_agent_session(session_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/query-agent/sessions", tags=["agents"])
+@router.get("/query-agent/sessions")
 async def list_query_agent_sessions():
     """
     List all active Query Agent sessions.

@@ -414,7 +414,7 @@ class GeneratePresentationRequest(BaseModel):
 
 # ENDPOINTS
 
-@router.post("/conversation-generate", response_model=ConversationResponse, tags=["agents"])
+@router.post("/conversation-generate", response_model=ConversationResponse)
 async def conversation_generate_endpoint(
     request: Request,
     conversation_request: ConversationGenerateRequest = Body(...)
@@ -564,7 +564,7 @@ async def conversation_generate_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/conversation-edit", response_model=ConversationResponse, tags=["agents"])
+@router.post("/conversation-edit", response_model=ConversationResponse)
 async def conversation_edit_endpoint(
     request: Request,
     conversation_request: ConversationEditRequest = Body(...)
@@ -723,7 +723,7 @@ async def conversation_edit_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/conversation/reset", tags=["agents"])
+@router.post("/conversation/reset")
 async def reset_conversation(reset_request: ResetSessionRequest):
     """
     Reset a conversation session (works for both generation and editing sessions).
@@ -755,7 +755,7 @@ async def reset_conversation(reset_request: ResetSessionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/conversation/session/{session_id}", response_model=SessionInfoResponse, tags=["agents"])
+@router.get("/conversation/session/{session_id}", response_model=SessionInfoResponse)
 async def get_session_info(session_id: str):
     """
     Get information about a conversation session (generation or editing).
@@ -793,7 +793,7 @@ async def get_session_info(session_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/conversation/session/{session_id}", tags=["agents"])
+@router.delete("/conversation/session/{session_id}")
 async def delete_session(session_id: str):
     """
     Delete a conversation session (generation or editing).
@@ -822,7 +822,7 @@ async def delete_session(session_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/conversation/sessions", tags=["agents"])
+@router.get("/conversation/sessions")
 async def list_sessions():
     """
     List all active conversation sessions (both generation and editing).
@@ -854,7 +854,7 @@ async def list_sessions():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/generate-presentation", tags=["agents"])
+@router.post("/generate-presentation")
 async def generate_presentation(
     request: Request,
     gen_request: GeneratePresentationRequest = Body(...)
@@ -927,7 +927,7 @@ async def generate_presentation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/agents/info", tags=["agents"])
+@router.get("/agents/info")
 async def agents_info():
     """
     Get information about available agents and their configurations.
