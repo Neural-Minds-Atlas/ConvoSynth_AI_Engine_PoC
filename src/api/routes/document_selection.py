@@ -102,7 +102,7 @@ class DocumentSelectionResponse(BaseModel):
         populate_by_name = True
 
 
-@router.post("/select-documents", response_model=DocumentSelectionResponse, tags=["agents"])
+@router.post("/select-documents", response_model=DocumentSelectionResponse)
 async def select_documents(
     request: DocumentSelectionRequest = Body(...)
 ):
@@ -217,7 +217,7 @@ async def select_documents(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/metadata/corpus", tags=["agents"])
+@router.get("/metadata/corpus")
 async def get_metadata_corpus():
     """
     Get the current document metadata corpus.
@@ -257,7 +257,7 @@ async def get_metadata_corpus():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/metadata/search", tags=["agents"])
+@router.get("/metadata/search")
 async def search_metadata(
     topics: Optional[str] = None,
     department: Optional[str] = None,
