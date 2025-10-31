@@ -4,6 +4,6 @@
 # ============================================================================
 """API routes package."""
 
-from . import health, documents, chat, admin, agents, query_agent, document_selection
+from . import health, documents, chat, admin, agents, query_agent, document_selection, content
 
-__all__ = ["health", "documents", "chat", "admin", "agents", "query_agent", "document_selection"]
+__all__ = ["health", "documents", "chat", "admin", "agents", "query_agent", "document_selection", "content"]

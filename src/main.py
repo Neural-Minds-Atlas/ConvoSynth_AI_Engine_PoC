@@ -90,6 +90,14 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("outline_agent_init_failed", error=str(e))
 
+    # Initialize Content Agent
+    try:
+        from src.api.routes.content import initialize_content_agent
+        initialize_content_agent(rag_client=rag_client)
+        logger.info("content_agent_initialized")
+    except Exception as e:
+        logger.warning("content_agent_init_failed", error=str(e))
+
     # Set in app state for route access
     app.state.workflow = workflow
     app.state.rag_client = rag_client
