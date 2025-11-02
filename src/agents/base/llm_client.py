@@ -101,9 +101,14 @@ class ClaudeClient(LLMClient):
             # Extract text from response
             content = response.content[0].text if response.content else ""
 
+            # Claude API usage object has input_tokens and output_tokens, not total_tokens
+            total_tokens = response.usage.input_tokens + response.usage.output_tokens
+
             self.logger.info(
                 "claude_api_success",
-                tokens_used=response.usage.total_tokens,
+                input_tokens=response.usage.input_tokens,
+                output_tokens=response.usage.output_tokens,
+                total_tokens=total_tokens,
                 response_length=len(content)
             )
 

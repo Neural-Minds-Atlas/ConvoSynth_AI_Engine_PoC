@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 from src.agents.content.agent import ContentAgent
 from src.agents.content.models import ContentAgentInput, ContentAgentOutput
 from .content_example_payload import CONTENT_GENERATE_EXAMPLE
+from src.db.mongodb import get_collection 
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -20,8 +21,8 @@ logger = logging.getLogger(__name__)
 
 # Create router
 router = APIRouter(
-    prefix="/api/v1/content",
-    tags=["Content Agent"],
+    prefix="/content",
+    tags=["agents"],
     responses={404: {"description": "Not found"}},
 )
 
@@ -92,7 +93,7 @@ def initialize_content_agent(rag_client=None):
                         "sessionId": "session_bdx_stock_analysis_001",
                         "userId": "user_portfolio_manager_123",
                         "contentId": "content_1696084225",
-                        "cycleType": "generation",
+                        "cycleType": "generate",
                         "expandedPresentationContent": {
                             "title": "BDX Stock Performance Analysis: August-September 2025 Comparison",
                             "subtitle": "Comprehensive Price Movement and Volatility Assessment",
@@ -198,9 +199,31 @@ async def generate_content(
 
         # Generate content (now async)
         result = await agent.generate_content(input_data)
-        
+
         logger.info(f"Content generation completed: {result.success}")
-        
+
+        # Save Content Agent output to MongoDB
+        try:
+            from datetime import datetime
+            content_collection = get_collection("content_outputs")
+
+            # Convert to dict for MongoDB with camelCase aliases
+            content_dict = result.model_dump(by_alias=True, exclude_none=False)
+
+            # Add createdAt timestamp for MongoDB
+            content_dict["createdAt"] = datetime.utcnow()
+
+            logger.info(f"Saving content to MongoDB: content_id={result.contentId}, session_id={result.sessionId}")
+
+            # Save to MongoDB
+            await content_collection.insert_one(content_dict)
+
+            logger.info(f"Content saved to MongoDB: content_id={result.contentId}, session_id={result.sessionId}")
+
+        except Exception as e:
+            logger.error(f"Failed to save content to MongoDB: {str(e)}", exc_info=True)
+            # Don't fail the request if MongoDB save fails, just log the error
+
         return result
         
     except ValueError as e:

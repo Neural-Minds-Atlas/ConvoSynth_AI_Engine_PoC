@@ -1,5 +1,8 @@
 """Conversation service for handling conversation logic."""
+
 from typing import Dict, Any, Optional
+import json
+
 from datetime import datetime
 
 from src.db.repositories import (
@@ -7,6 +10,7 @@ from src.db.repositories import (
     ConversationRepository,
     DocumentRepository,
 )
+
 from src.db.models import (
     UserDocument,
     ConversationDocument,
@@ -14,6 +18,7 @@ from src.db.models import (
     ExtractedInformation,
     RBACValidation,
 )
+
 from src.agents.conversation.agent import ConversationAgent
 from src.services.rbac_service import RBACService
 from src.services.llm_service import LLMService
@@ -51,6 +56,28 @@ class ConversationService:
         self.rbac_service = rbac_service
         self.llm_service = llm_service
 
+    def _snake_to_camel(self, data: Any) -> Any:
+        """Convert snake_case dict keys to camelCase recursively.
+
+        Args:
+            data: Data to convert (can be dict, list, or primitive)
+
+        Returns:
+            Converted data with camelCase keys
+        """
+        if isinstance(data, dict):
+            result = {}
+            for key, value in data.items():
+                # Convert snake_case to camelCase
+                camel_key = ''.join(word.capitalize() if i > 0 else word 
+                                   for i, word in enumerate(key.split('_')))
+                result[camel_key] = self._snake_to_camel(value)
+            return result
+        elif isinstance(data, list):
+            return [self._snake_to_camel(item) for item in data]
+        else:
+            return data
+
     async def process_conversation(
         self,
         user_id: str,
@@ -87,8 +114,8 @@ class ConversationService:
                 userId=user_id,
                 cycleType=request.cycleType,
                 messages=[],
-                extractedInfo=ExtractedInformation(),
-                rbacValidation=RBACValidation(),
+                extractedInfo=ExtractedInformation().model_dump(),
+                rbacValidation=RBACValidation().model_dump(),
             )
             await self.conversation_repo.create_conversation(conversation)
 
@@ -117,26 +144,37 @@ class ConversationService:
             session_id=session_id,
         )
 
+        # 🔍 DEBUG: Log what we get from agent
+        extracted_info_raw = result.get("extractedInformation", {})
+        logger.info("🔍 DEBUG - RAW extracted_info from agent:", 
+                   extra={"data": json.dumps(extracted_info_raw, indent=2)})
+
+        # Transform extracted information
+        extracted_info_camel = self._snake_to_camel(extracted_info_raw)
+
+        # 🔍 DEBUG: Log after conversion
+        logger.info("🔍 DEBUG - AFTER snake_to_camel conversion:", 
+                   extra={"data": json.dumps(extracted_info_camel, indent=2)})
+
         # Update conversation in database
-        # Parse through Pydantic model to convert snake_case to camelCase
-        from src.db.models import ExtractedInformation
-        extracted_info = ExtractedInformation(**result["extractedInformation"]).model_dump(by_alias=False)
-
-        # Debug logging
-        logger.info("extracted_info_to_save", confidence=extracted_info.get('confidenceScore'), keys=list(extracted_info.keys()))
-
         update_data = {
             "messages": [
                 ConversationMessage(**msg).model_dump()
                 for msg in result["conversationHistory"]
             ],
-            "extractedInfo": extracted_info,
+            "extractedInfo": extracted_info_camel,
             "rbacValidation": result.get("rbacValidation", {}),
             "nextAction": result.get("nextAction", "continue_conversation"),
             "handoffToAgent": result.get("handoffToAgent"),
-            "toolCallsMade": result.get("toolCallsMade", 0),
+            "rbacWarnings": result.get("rbacWarnings", []),
+            "suggestedDocuments": result.get("suggestedDocuments", []),
+            "totalCallsMade": conversation.totalCallsMade + 1,
             "updatedAt": datetime.utcnow(),
         }
+
+        # 🔍 DEBUG: Log what we're sending to DB
+        logger.info("🔍 DEBUG - SENDING TO DB:", 
+                   extra={"extractedInfo": json.dumps(update_data["extractedInfo"], indent=2)})
 
         await self.conversation_repo.update_conversation(session_id, update_data)
 
@@ -144,7 +182,7 @@ class ConversationService:
             "conversation_processed",
             session_id=session_id,
             user_id=user_id,
-            is_complete=result["isComplete"],
+            is_complete=result.get("isComplete", False),
         )
 
         # Add session ID to result

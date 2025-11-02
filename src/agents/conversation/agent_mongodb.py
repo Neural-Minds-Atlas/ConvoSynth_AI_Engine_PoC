@@ -1,4 +1,5 @@
 """Conversation Agent adapted for MongoDB backend."""
+
 from typing import Any, Dict, List, Optional
 import json
 from datetime import datetime
@@ -24,6 +25,7 @@ from src.utils.security import generate_session_id
 from src.utils.exceptions import AgentException
 
 settings = get_settings()
+
 from .prompts import (
     CONVERSATION_SYSTEM_PROMPT,
     INFORMATION_EXTRACTION_PROMPT,
@@ -64,7 +66,7 @@ class ConversationAgent:
         # Agent state (per-request)
         self.user_profile: Optional[UserProfile] = None
         self.accessible_documents: List[AccessibleDocument] = []
-        self.cycle_type = "generation"
+        self.cycle_type = "generate"
         self.extracted_info: Dict[str, Any] = {}
         self.rbac_validation: Dict[str, Any] = {}
         self.conversation_history: List[Dict[str, str]] = []
@@ -76,7 +78,7 @@ class ConversationAgent:
         self,
         user_profile: UserProfile,
         accessible_documents: List[AccessibleDocument],
-        cycle_type: str = "generation",
+        cycle_type: str = "generate",
         conversation_history: List[Dict[str, str]] = None,
     ):
         """Set context for conversation.
@@ -173,13 +175,13 @@ class ConversationAgent:
 
             # Add assistant response to history
             self.conversation_history.append({
-                "role": "assistant",
+                "role": "convosynth_agent",
                 "content": response_text,
                 "timestamp": datetime.utcnow().isoformat(),
             })
 
             # Check for completion (generation mode)
-            if self.cycle_type == "generation":
+            if self.cycle_type == "generate":
                 self._check_completion_on_confirmation(user_message)
 
             # Determine state and next action
@@ -187,20 +189,50 @@ class ConversationAgent:
             confidence = self.extracted_info.get("confidence_score", 0)
             conversation_state = self.extracted_info.get("conversation_state", "gathering")
 
+            # Log pre-pydantic data
+            logger.info("pre_pydantic_parse", extracted_info=self.extracted_info, confidence=confidence)
+
+            # ✅ FIX: Return raw dict instead of parsing through Pydantic!
+            # The conversion to camelCase will happen in conversation_service.py
+            extracted_info_output = self.extracted_info
+
+            # Log post-processing (not through Pydantic anymore)
+            logger.info("post_extraction_output", extracted_info=extracted_info_output, confidence=confidence)
+
+            # Get RBAC concerns for response
+            rbac_concerns = self.extracted_info.get("rbac_concerns", [])
+            rbac_warnings = [concern for concern in rbac_concerns if concern.get("severity") == "warning"]
+
+            # Suggest documents if applicable
+            suggested_docs = []
+            if self.cycle_type == "generate":
+                data_categories = self.extracted_info.get("data_requirements", {}).get("data_categories", [])
+                if data_categories:
+                    suggested_docs = [
+                        {"documentId": doc.documentId, "documentName": doc.documentName}
+                        for doc in self.accessible_documents
+                        if any(cat.lower() in doc.category.lower() for cat in data_categories)
+                    ][:5]
+
             # Determine next action and handoff
             next_action, handoff_agent = self._determine_next_action(is_complete)
 
             return {
                 "response": response_text,
                 "isComplete": is_complete,
-                "extractedInformation": self.extracted_info,
+                "extractedInformation": extracted_info_output,  # ✅ RAW DICT, not Pydantic output
                 "rbacValidation": self.rbac_validation,
+                "rbacConcerns": rbac_concerns,
+                "missingInformation": self.extracted_info.get("missing_information", []),
                 "confidenceScore": confidence,
                 "conversationState": conversation_state,
                 "nextAction": next_action,
                 "handoffToAgent": handoff_agent,
+                "rbacWarnings": rbac_warnings,
+                "suggestedDocuments": suggested_docs,
                 "conversationHistory": self.conversation_history,
                 "toolCallsMade": self.tool_call_count,
+                "cycleType": self.cycle_type,
                 "timestamp": datetime.utcnow().isoformat(),
             }
 
@@ -209,7 +241,7 @@ class ConversationAgent:
             fallback_response = "I apologize, but I encountered an issue. Could you please rephrase that?"
 
             self.conversation_history.append({
-                "role": "assistant",
+                "role": "convosynth_agent",
                 "content": fallback_response,
                 "timestamp": datetime.utcnow().isoformat(),
             })
@@ -255,6 +287,7 @@ class ConversationAgent:
                 ),
             ),
         ]
+
         return tools
 
     def _tool_extract_information(self, input_text: str = "") -> str:
@@ -294,16 +327,23 @@ USER PROFILE:
 
             logger.info(
                 "information_extracted",
+                agent="conversation_agent",
                 cycle_type=self.cycle_type,
                 is_complete=extracted.get("is_complete", False),
                 confidence=extracted.get("confidence_score", 0),
+                missing_count=len(extracted.get("missing_information", [])),
+                rbac_concerns=len(extracted.get("rbac_concerns", [])),
             )
 
             summary = {
                 "cycle_type": self.cycle_type,
                 "confidence": extracted.get("confidence_score", 0),
                 "is_complete": extracted.get("is_complete", False),
+                "conversation_state": extracted.get("conversation_state", "gathering"),
                 "missing_count": len(extracted.get("missing_information", [])),
+                "top_missing": extracted.get("missing_information", [])[:3],
+                "rbac_concerns": extracted.get("rbac_concerns", []),
+                "editing_requirements": extracted.get("editing_requirements"),
             }
 
             return json.dumps(summary, indent=2)
@@ -380,7 +420,7 @@ USER PROFILE:
             response = self.llm.invoke(prompt)
             question = response.content.strip()
 
-            logger.info("followup_generated", cycle_type=self.cycle_type)
+            logger.info("followup_generated", agent="conversation_agent", cycle_type=self.cycle_type, missing_item=top_missing, user_name=user_name)
 
             return question
 
@@ -400,13 +440,14 @@ USER PROFILE:
                 json_str = content.strip()
 
             return json.loads(json_str)
+
         except Exception as e:
             logger.error("json_parse_failed", error=str(e), content_preview=content[:200])
             return {}
 
     async def _generate_fallback_response(self) -> str:
         """Generate fallback response."""
-        if self.cycle_type == "editing":
+        if self.cycle_type == "edit":
             return "Could you clarify what changes you'd like to make?"
 
         if self.user_profile:
@@ -418,7 +459,6 @@ USER PROFILE:
     def _check_completion_on_confirmation(self, user_message: str):
         """Check if user confirmed and all fields are filled."""
         user_input_lower = user_message.lower()
-
         confirmation_keywords = [
             "proceed", "let's go", "lets go", "start", "create", "yes", "confirmed",
             "go ahead", "that works", "perfect", "sounds good"
@@ -447,12 +487,14 @@ USER PROFILE:
                 self.extracted_info["confidence_score"] = 1.0
                 self.extracted_info["conversation_state"] = "complete"
                 self.extracted_info["missing_information"] = []
-
-                logger.info("forced_completion_on_confirmation", all_fields_filled=True)
+                logger.info("confirmation_received_but_fields_incomplete" if not all_filled else "forced_completion_on_confirmation", 
+                           agent="conversation_agent", user_confirmed=True, 
+                           missing_fields=self.extracted_info.get("missing_information", []), 
+                           current_confidence=self.extracted_info.get("confidence_score", 0))
 
     def _determine_next_action(self, is_complete: bool) -> tuple:
         """Determine next action and handoff agent."""
-        if self.cycle_type == "editing":
+        if self.cycle_type == "edit":
             if is_complete:
                 editing_reqs = self.extracted_info.get("editing_requirements", {})
                 edit_type = editing_reqs.get("edit_type", "general")
@@ -467,6 +509,7 @@ USER PROFILE:
                     return "request_clarification", None
             else:
                 return "request_clarification", None
+
         else:  # generation mode
             if is_complete:
                 return "handoff_to_document_selection", "Document Selection Agent"

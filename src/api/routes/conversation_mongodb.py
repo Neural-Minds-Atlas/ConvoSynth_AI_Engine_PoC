@@ -40,7 +40,7 @@ async def conversation_generate(
     """
     try:
         # Force generation mode
-        request.cycleType = "generation"
+        request.cycleType = "generate"
         request.editingContext = None
 
         result = await conversation_service.process_conversation(
@@ -90,7 +90,7 @@ async def conversation_edit(
     """
     try:
         # Force editing mode
-        request.cycleType = "editing"
+        request.cycleType = "edit"
 
         if not request.editingContext:
             raise HTTPException(

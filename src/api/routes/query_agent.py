@@ -9,7 +9,7 @@ import structlog
 from src.agents.query import QueryAgent
 from src.agents.base import AgentRequest
 from src.db.mongodb import get_collection
-from src.db.models import QueryAgentOutput, GeneratedQuery, RetrievedContext
+from src.db.models import QueryAgentOutput
 
 logger = structlog.get_logger(__name__)
 
@@ -128,7 +128,7 @@ class PerformanceMetrics(BaseModel):
 
 
 class QueryAgentResponse(BaseModel):
-    """Response model for Query Agent."""
+    """Response model for Query Agent - matches exact agent output."""
     success: bool
     session_id: Optional[str] = Field(default=None, alias="sessionId")
     response: str
@@ -244,69 +244,21 @@ async def query_agent_endpoint(
             tool_calls=output.get("tool_calls_made", 0)
         )
 
-        # Save Query Agent output to MongoDB
+        # Save Query Agent output to MongoDB - save exact agent output
         try:
             query_agent_collection = get_collection("query_agent_outputs")
 
-            # Convert generated queries to model format
-            generated_queries = []
-            for idx, query_data in enumerate(output.get("generated_queries", [])):
-                # Generate query ID if not present
-                query_id = query_data.get("query_id", f"query_{session_id}_{idx}")
-
-                # Convert priority to int (handle "high", "medium", "low" strings)
-                priority_value = query_data.get("priority", 3)
-                if isinstance(priority_value, str):
-                    priority_map = {"high": 5, "medium": 3, "low": 1}
-                    priority_value = priority_map.get(priority_value.lower(), 3)
-                elif not isinstance(priority_value, int):
-                    priority_value = 3
-
-                generated_queries.append(GeneratedQuery(
-                    queryId=query_id,
-                    queryText=query_data.get("query", ""),
-                    queryType=query_data.get("query_type", "topic"),
-                    ragMode=query_data.get("rag_mode", "hybrid"),
-                    priority=int(priority_value),
-                    metadata=query_data.get("filters", {})
-                ))
-
-            # Convert retrieved contexts to model format
-            retrieved_contexts = []
-            for context_data in output.get("retrieved_contexts", []):
-                # Extract document sources from chunks
-                chunks = context_data.get("chunks", [])
-                document_sources = list(set([
-                    chunk.get("document_name", "unknown")
-                    for chunk in chunks
-                    if isinstance(chunk, dict)
-                ]))
-
-                # Calculate total token count from chunks
-                token_count = sum([
-                    chunk.get("token_count", 0)
-                    for chunk in chunks
-                    if isinstance(chunk, dict)
-                ])
-
-                retrieved_contexts.append(RetrievedContext(
-                    queryId=context_data.get("query_id", ""),
-                    documentSources=document_sources,
-                    retrievedChunks=chunks,
-                    relevanceScore=context_data.get("relevance_score", 0.0),
-                    tokenCount=token_count,
-                    ragMode=context_data.get("rag_mode", "hybrid")
-                ))
-
-            # Create Query Agent Output document
+            # Create Query Agent Output document with exact agent output structure
             query_agent_output = QueryAgentOutput(
+                success=True,
                 sessionId=session_id,
-                generatedQueries=generated_queries,
-                retrievedContexts=retrieved_contexts,
+                response=output.get("response", ""),
+                generatedQueries=output.get("generated_queries", []),  # Raw query objects as-is
                 synthesizedContext=output.get("synthesized_context", {}),
-                keyFindings=output.get("key_findings", []),
-                totalTokensRetrieved=output.get("performance_metrics", {}).get("total_tokens_retrieved", 0),
-                presentationMetadata=output.get("presentation_metadata", {}),
+                performanceMetrics=output.get("performance_metrics", {}),
+                toolCallsMade=output.get("tool_calls_made", 0),
+                timestamp=output.get("timestamp", datetime.utcnow().isoformat()),
+                error=None,
                 createdAt=datetime.utcnow()
             )
 
@@ -334,7 +286,8 @@ async def query_agent_endpoint(
             synthesized_context=output.get("synthesized_context", {}),
             performance_metrics=output.get("performance_metrics", {}),
             tool_calls_made=output.get("tool_calls_made", 0),
-            timestamp=output.get("timestamp", "")
+            timestamp=output.get("timestamp", datetime.utcnow().isoformat()),
+            error=None
         )
 
     except HTTPException:

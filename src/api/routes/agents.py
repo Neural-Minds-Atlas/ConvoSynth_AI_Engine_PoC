@@ -101,6 +101,7 @@ class RBACValidation(BaseModel):
 class ConversationGenerateRequest(BaseModel):
     """Request model for conversation generation endpoint (no editing context)."""
     message: str = Field(..., description="User's message", min_length=1)
+    id: Optional[str] = Field(default=None, description="MongoDB conversation _id (if updating existing conversation)", alias="_id")
     session_id: Optional[str] = Field(default=None, description="Session ID for conversation continuity", alias="sessionId")
     user_profile: UserProfile = Field(..., description="User profile with RBAC information", alias="userProfile")
     accessible_documents: List[DocumentAccess] = Field(
@@ -115,6 +116,7 @@ class ConversationGenerateRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "message": "I need to create a presentation about Q3 operational performance",
+                "_id": "69050c25d3a3aea3ac48a6ad",
                 "sessionId": "session_789",
                 "userProfile": {
                     "userId": "user_456",
@@ -175,6 +177,7 @@ class EditingContext(BaseModel):
 class ConversationEditRequest(BaseModel):
     """Request model for conversation editing endpoint (editing context required)."""
     message: str = Field(..., description="User's edit message", min_length=1)
+    id: Optional[str] = Field(default=None, description="MongoDB conversation _id (if updating existing conversation)", alias="_id")
     session_id: Optional[str] = Field(default=None, description="Session ID for conversation continuity", alias="sessionId")
     user_profile: UserProfile = Field(..., description="User profile with RBAC information", alias="userProfile")
     accessible_documents: List[DocumentAccess] = Field(
@@ -190,6 +193,7 @@ class ConversationEditRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "message": "Make slide 3 focus on efficiency metrics instead of productivity",
+                "_id": "69050c25d3a3aea3ac48a6ad",
                 "sessionId": "session_790",
                 "userProfile": {
                     "userId": "user_456",
@@ -484,7 +488,7 @@ async def conversation_generate_endpoint(
         agent_request = AgentRequest(
             user_input=conversation_request.message,
             context={
-                "cycleType": "generation",
+                "cycleType": "generate",
                 "userProfile": conversation_request.user_profile.model_dump(by_alias=True),
                 "accessibleDocuments": [doc.model_dump(by_alias=True) for doc in conversation_request.accessible_documents],
                 **conversation_request.context
@@ -539,45 +543,60 @@ async def conversation_generate_endpoint(
                 timestamp=datetime.utcnow()
             )
 
-            # Parse extracted_information through Pydantic model to ensure correct field mapping
-            from src.db.models import ExtractedInformation
+            # Convert snake_case to camelCase for MongoDB
             from bson import ObjectId
 
-            extracted_info_dict = output.get("extracted_information", {})
-            logger.info("pre_pydantic_parse", extracted_info=extracted_info_dict, confidence=extracted_info_dict.get("confidence_score"))
+            def snake_to_camel(data):
+                """Recursively convert snake_case keys to camelCase."""
+                if isinstance(data, dict):
+                    return {
+                        ''.join(word.capitalize() if i > 0 else word for i, word in enumerate(k.split('_'))): snake_to_camel(v)
+                        for k, v in data.items()
+                    }
+                elif isinstance(data, list):
+                    return [snake_to_camel(item) for item in data]
+                else:
+                    return data
 
-            try:
-                extracted_info = ExtractedInformation(**extracted_info_dict).model_dump(by_alias=False)
-                logger.info("post_pydantic_parse", extracted_info=extracted_info, confidence=extracted_info.get("confidenceScore"))
-            except Exception as e:
-                logger.error("pydantic_parse_failed", error=str(e), extracted_info_dict=extracted_info_dict)
-                # Fallback to raw dict if parsing fails
-                extracted_info = extracted_info_dict
+            extracted_info_dict = output.get("extracted_information", {})
+            logger.info("pre_conversion", extracted_info=extracted_info_dict, confidence=extracted_info_dict.get("confidence_score"))
+
+            # Convert to camelCase for MongoDB
+            extracted_info = snake_to_camel(extracted_info_dict)
+            logger.info("post_conversion", extracted_info=extracted_info, confidence=extracted_info.get("confidenceScore"))
 
             # The conversation should already exist (blank conversation created by frontend)
-            # Frontend sends either _id or sessionId
-            try:
-                conversation_object_id = ObjectId(session_id)
-            except Exception:
-                # If session_id is not a valid ObjectId, use it as sessionId field
-                conversation_object_id = None
-
-            # Try to find by _id first, then by sessionId
+            # Frontend sends _id field if updating existing conversation
             existing_conv = None
-            if conversation_object_id:
-                existing_conv = await conversations_collection.find_one({"_id": conversation_object_id})
 
-            if not existing_conv:
-                # Try finding by sessionId field
+            # Priority 1: Check if _id field was provided
+            if conversation_request.id:
+                try:
+                    conversation_object_id = ObjectId(conversation_request.id)
+                    existing_conv = await conversations_collection.find_one({"_id": conversation_object_id})
+                    logger.info("looking_up_by_id", _id=conversation_request.id, found=existing_conv is not None)
+                except Exception as e:
+                    logger.error("invalid_id_format", _id=conversation_request.id, error=str(e))
+
+            # Priority 2: Try session_id if it looks like an ObjectId
+            if not existing_conv and session_id:
+                try:
+                    conversation_object_id = ObjectId(session_id)
+                    existing_conv = await conversations_collection.find_one({"_id": conversation_object_id})
+                    logger.info("looking_up_by_session_as_id", session_id=session_id, found=existing_conv is not None)
+                except Exception:
+                    pass  # session_id is not a valid ObjectId
+
+            # Priority 3: Try finding by sessionId field
+            if not existing_conv and session_id:
                 existing_conv = await conversations_collection.find_one({"sessionId": session_id})
+                logger.info("looking_up_by_session_id_field", session_id=session_id, found=existing_conv is not None)
 
             if existing_conv:
                 # Update the existing conversation with messages and extracted info
                 update_query = {"_id": existing_conv["_id"]}
 
-                # extractedInfo should be an array - update the first element or append
-                extracted_info_array = [extracted_info]
-
+                # extractedInfo should be an object (not an array)
                 await conversations_collection.update_one(
                     update_query,
                     {
@@ -590,7 +609,7 @@ async def conversation_generate_endpoint(
                             }
                         },
                         "$set": {
-                            "extractedInfo": extracted_info_array,
+                            "extractedInfo": extracted_info,
                             "updatedAt": datetime.utcnow(),
                             "totalCallsMade": output.get("tool_calls_made", 0),
                             "nextAction": output.get("next_action", "continue_conversation"),
@@ -608,13 +627,24 @@ async def conversation_generate_endpoint(
                 import uuid
                 custom_session_id = f"session_{uuid.uuid4()}"
 
+                # Build RBAC validation object
+                rbac_validation_dict = output.get("rbac_validation", {})
+                rbac_validation_obj = {
+                    "validationResult": rbac_validation_dict.get("validation_result", "allowed"),
+                    "allowedItems": rbac_validation_dict.get("allowed_items", []),
+                    "deniedItems": rbac_validation_dict.get("denied_items", []),
+                    "explanation": rbac_validation_dict.get("explanation", ""),
+                    "suggestedAlternatives": rbac_validation_dict.get("suggested_alternatives", []),
+                    "professionalMessage": rbac_validation_dict.get("professional_message")
+                }
+
                 conversation_doc = ConversationDocument(
                     sessionId=custom_session_id,
                     userId=conversation_request.user_profile.user_id,
                     cycleType="active",
                     messages=[user_message, assistant_message],
-                    extractedInfo=[extracted_info],
-                    rbacValidation=[RBACValidation()],
+                    extractedInfo=extracted_info,
+                    rbacValidation=rbac_validation_obj,
                     totalCallsMade=output.get("tool_calls_made", 0),
                     nextAction=output.get("next_action", "continue_conversation"),
                     handOffToAgent=output.get("handoff_to_agent"),
@@ -661,7 +691,7 @@ async def conversation_generate_endpoint(
             handoff_to_agent=output.get("handoff_to_agent"),
             rbac_warnings=output.get("rbac_warnings", []),
             suggested_documents=output.get("suggested_documents", []),
-            cycle_type="generation",
+            cycle_type="generate",
             timestamp=output.get("timestamp", "")
         )
 
@@ -735,24 +765,24 @@ async def conversation_edit_endpoint(
             # Initialize agent with user profile for EDITING mode
             agent.set_user_profile(conversation_request.user_profile.model_dump(by_alias=True))
             agent.set_accessible_documents([doc.model_dump(by_alias=True) for doc in conversation_request.accessible_documents])
-            agent.set_cycle_type("editing")  # Explicitly set to editing mode
+            agent.set_cycle_type("edit")  # Explicitly set to editing mode
             agent.set_editing_context(conversation_request.editing_context.model_dump(by_alias=True))
         else:
             agent = conversation_sessions[session_id]
             logger.info("reusing_existing_editing_session", session_id=session_id)
-            
+
             # Update accessible documents if changed
             agent.set_accessible_documents([doc.model_dump(by_alias=True) for doc in conversation_request.accessible_documents])
-            
+
             # Update cycle type and editing context
-            agent.set_cycle_type("editing")
+            agent.set_cycle_type("edit")
             agent.set_editing_context(conversation_request.editing_context.model_dump(by_alias=True))
 
         # Create agent request with EDITING context
         agent_request = AgentRequest(
             user_input=conversation_request.message,
             context={
-                "cycleType": "editing",
+                "cycleType": "edit",
                 "userProfile": conversation_request.user_profile.model_dump(by_alias=True),
                 "accessibleDocuments": [doc.model_dump(by_alias=True) for doc in conversation_request.accessible_documents],
                 "editingContext": conversation_request.editing_context.model_dump(by_alias=True),
@@ -808,45 +838,60 @@ async def conversation_edit_endpoint(
                 timestamp=datetime.utcnow()
             )
 
-            # Parse extracted_information through Pydantic model to ensure correct field mapping
-            from src.db.models import ExtractedInformation
+            # Convert snake_case to camelCase for MongoDB
             from bson import ObjectId
 
-            extracted_info_dict = output.get("extracted_information", {})
-            logger.info("pre_pydantic_parse", extracted_info=extracted_info_dict, confidence=extracted_info_dict.get("confidence_score"))
+            def snake_to_camel(data):
+                """Recursively convert snake_case keys to camelCase."""
+                if isinstance(data, dict):
+                    return {
+                        ''.join(word.capitalize() if i > 0 else word for i, word in enumerate(k.split('_'))): snake_to_camel(v)
+                        for k, v in data.items()
+                    }
+                elif isinstance(data, list):
+                    return [snake_to_camel(item) for item in data]
+                else:
+                    return data
 
-            try:
-                extracted_info = ExtractedInformation(**extracted_info_dict).model_dump(by_alias=False)
-                logger.info("post_pydantic_parse", extracted_info=extracted_info, confidence=extracted_info.get("confidenceScore"))
-            except Exception as e:
-                logger.error("pydantic_parse_failed", error=str(e), extracted_info_dict=extracted_info_dict)
-                # Fallback to raw dict if parsing fails
-                extracted_info = extracted_info_dict
+            extracted_info_dict = output.get("extracted_information", {})
+            logger.info("pre_conversion", extracted_info=extracted_info_dict, confidence=extracted_info_dict.get("confidence_score"))
+
+            # Convert to camelCase for MongoDB
+            extracted_info = snake_to_camel(extracted_info_dict)
+            logger.info("post_conversion", extracted_info=extracted_info, confidence=extracted_info.get("confidenceScore"))
 
             # The conversation should already exist (blank conversation created by frontend)
-            # Frontend sends either _id or sessionId
-            try:
-                conversation_object_id = ObjectId(session_id)
-            except Exception:
-                # If session_id is not a valid ObjectId, use it as sessionId field
-                conversation_object_id = None
-
-            # Try to find by _id first, then by sessionId
+            # Frontend sends _id field if updating existing conversation
             existing_conv = None
-            if conversation_object_id:
-                existing_conv = await conversations_collection.find_one({"_id": conversation_object_id})
 
-            if not existing_conv:
-                # Try finding by sessionId field
+            # Priority 1: Check if _id field was provided
+            if conversation_request.id:
+                try:
+                    conversation_object_id = ObjectId(conversation_request.id)
+                    existing_conv = await conversations_collection.find_one({"_id": conversation_object_id})
+                    logger.info("editing_looking_up_by_id", _id=conversation_request.id, found=existing_conv is not None)
+                except Exception as e:
+                    logger.error("editing_invalid_id_format", _id=conversation_request.id, error=str(e))
+
+            # Priority 2: Try session_id if it looks like an ObjectId
+            if not existing_conv and session_id:
+                try:
+                    conversation_object_id = ObjectId(session_id)
+                    existing_conv = await conversations_collection.find_one({"_id": conversation_object_id})
+                    logger.info("editing_looking_up_by_session_as_id", session_id=session_id, found=existing_conv is not None)
+                except Exception:
+                    pass  # session_id is not a valid ObjectId
+
+            # Priority 3: Try finding by sessionId field
+            if not existing_conv and session_id:
                 existing_conv = await conversations_collection.find_one({"sessionId": session_id})
+                logger.info("editing_looking_up_by_session_id_field", session_id=session_id, found=existing_conv is not None)
 
             if existing_conv:
                 # Update the existing conversation with messages and extracted info
                 update_query = {"_id": existing_conv["_id"]}
 
-                # extractedInfo should be an array - update the first element or append
-                extracted_info_array = [extracted_info]
-
+                # extractedInfo should be an object (not an array)
                 await conversations_collection.update_one(
                     update_query,
                     {
@@ -859,7 +904,7 @@ async def conversation_edit_endpoint(
                             }
                         },
                         "$set": {
-                            "extractedInfo": extracted_info_array,
+                            "extractedInfo": extracted_info,
                             "updatedAt": datetime.utcnow(),
                             "totalCallsMade": output.get("tool_calls_made", 0),
                             "nextAction": output.get("next_action", "continue_conversation"),
@@ -877,13 +922,24 @@ async def conversation_edit_endpoint(
                 import uuid
                 custom_session_id = f"session_{uuid.uuid4()}"
 
+                # Build RBAC validation object
+                rbac_validation_dict = output.get("rbac_validation", {})
+                rbac_validation_obj = {
+                    "validationResult": rbac_validation_dict.get("validation_result", "allowed"),
+                    "allowedItems": rbac_validation_dict.get("allowed_items", []),
+                    "deniedItems": rbac_validation_dict.get("denied_items", []),
+                    "explanation": rbac_validation_dict.get("explanation", ""),
+                    "suggestedAlternatives": rbac_validation_dict.get("suggested_alternatives", []),
+                    "professionalMessage": rbac_validation_dict.get("professional_message")
+                }
+
                 conversation_doc = ConversationDocument(
                     sessionId=custom_session_id,
                     userId=conversation_request.user_profile.user_id,
-                    cycleType="editing",
+                    cycleType="edit",
                     messages=[user_message, assistant_message],
-                    extractedInfo=[extracted_info],
-                    rbacValidation=[RBACValidation()],
+                    extractedInfo=extracted_info,
+                    rbacValidation=rbac_validation_obj,
                     totalCallsMade=output.get("tool_calls_made", 0),
                     nextAction=output.get("next_action", "continue_conversation"),
                     handOffToAgent=output.get("handoff_to_agent"),
@@ -930,7 +986,7 @@ async def conversation_edit_endpoint(
             handoff_to_agent=output.get("handoff_to_agent"),
             rbac_warnings=output.get("rbac_warnings", []),
             suggested_documents=[],  # Not applicable in editing mode
-            cycle_type="editing",
+            cycle_type="edit",
             timestamp=output.get("timestamp", "")
         )
 

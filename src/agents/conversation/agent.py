@@ -49,7 +49,7 @@ class ConversationAgent(BaseAgent):
         self.tool_call_count = 0
         
         # Mode tracking
-        self.cycle_type = "generation"  # generation or editing
+        self.cycle_type = "generate"  # generation or editing
         
         # RBAC-related state
         self.user_profile: Optional[Dict[str, Any]] = None
@@ -114,8 +114,8 @@ class ConversationAgent(BaseAgent):
         self.editing_context = editing_context
         if editing_context.get("isEditing"):
             self.previous_presentation = editing_context.get("previousResponse", {})
-            self.cycle_type = "editing"
-            self.conversation_state = "editing"
+            self.cycle_type = "edit"
+            self.conversation_state = "edit"
         self.logger.info(
             "editing_context_set",
             is_editing=editing_context.get("isEditing"),
@@ -258,7 +258,7 @@ USER PROFILE:
             
             # Editing context
             editing_context_str = ""
-            if self.cycle_type == "editing" and self.editing_context:
+            if self.cycle_type == "edit" and self.editing_context:
                 editing_context_str = f"""
 EDITING CONTEXT:
 - Target Slide: {self.editing_context.get('targetSlide')}
@@ -313,7 +313,7 @@ EDITING CONTEXT:
         try:
             self.tool_call_count += 1
             
-            if self.cycle_type != "editing":
+            if self.cycle_type != "edit":
                 return json.dumps({"error": "Not in editing mode"})
             
             # Previous context
@@ -415,7 +415,7 @@ EDITING CONTEXT:
         try:
             self.tool_call_count += 1
             
-            if self.cycle_type != "generation":
+            if self.cycle_type != "generate":
                 return json.dumps({"suggested_documents": []})
             
             requirements = json.loads(requirements_json) if isinstance(requirements_json, str) else requirements_json
@@ -500,7 +500,7 @@ EDITING CONTEXT:
     """
             
             # Mode-specific logic
-            if self.cycle_type == "generation":
+            if self.cycle_type == "generate":
                 missing_info = self.extracted_info.get("missing_information", [])
                 if not missing_info:
                     return "Could you tell me more about your presentation needs?"
@@ -522,7 +522,7 @@ EDITING CONTEXT:
             restricted_data = "certain data"
             alternative_data = "accessible alternatives"
             
-            if self.cycle_type == "editing" and self.editing_context:
+            if self.cycle_type == "edit" and self.editing_context:
                 slide_number = str(self.editing_context.get("targetSlide", ""))
                 edit_request = self.editing_context.get("editQuery", "")
                 
@@ -614,13 +614,13 @@ RBAC STATUS:
         self.tool_call_count = 0
         
         # Extract mode and editing context from request
-        self.cycle_type = context.get("cycleType", "generation")
+        self.cycle_type = context.get("cycleType", "generate")
         
         if "editingContext" in context:
             self.set_editing_context(context["editingContext"])
         
         # Personalized greeting for first message in generation mode
-        if not self.conversation_history and self.user_profile and self.cycle_type == "generation":
+        if not self.conversation_history and self.user_profile and self.cycle_type == "generate":
             user_name = self.user_profile.get("name", "").split()[0]
             user_role = self.user_profile.get("role", "").replace("_", " ").title()
             greeting = f"\n[System: Greet {user_name}, a {user_role} in {self.user_profile.get('department')} department. They have access to {len(self.accessible_documents)} documents. MODE: {self.cycle_type.upper()}]"
@@ -651,7 +651,7 @@ RBAC STATUS:
             })
             
             # Post-process: Force completion if all fields filled and user confirmed
-            if self.cycle_type == "generation":
+            if self.cycle_type == "generate":
                 user_input_lower = request.user_input.lower()
                 
                 # Check for confirmation keywords
@@ -735,7 +735,7 @@ RBAC STATUS:
             conversation_state = self.extracted_info.get("conversation_state", "gathering")
             
             # Determine next action based on mode
-            if self.cycle_type == "editing":
+            if self.cycle_type == "edit":
                 if is_complete:
                     editing_reqs = self.extracted_info.get("editing_requirements", {})
                     edit_type = editing_reqs.get("edit_type", "general")
@@ -829,7 +829,7 @@ RBAC STATUS:
 
     async def _generate_fallback_response(self) -> str:
         """Generate fallback response."""
-        if self.cycle_type == "editing":
+        if self.cycle_type == "edit":
             return "Could you clarify what changes you'd like to make?"
         
         if not self.extracted_info and self.user_profile:
@@ -844,7 +844,7 @@ RBAC STATUS:
 
     def _create_basic_confirmation(self, extracted_info: Dict[str, Any]) -> str:
         """Create basic confirmation (fallback)."""
-        if self.cycle_type == "editing":
+        if self.cycle_type == "edit":
             editing_reqs = extracted_info.get("editing_requirements", {})
             parts = ["Got it! I'll make these changes:"]
             
@@ -885,7 +885,7 @@ RBAC STATUS:
         self.extracted_info = {}
         self.conversation_state = "gathering"
         self.tool_call_count = 0
-        self.cycle_type = "generation"
+        self.cycle_type = "generate"
         self.rbac_warnings = []
         self.out_of_scope_requests = []
         self.suggested_documents = []
@@ -919,7 +919,7 @@ RBAC STATUS:
             },
         }
         
-        if self.cycle_type == "generation":
+        if self.cycle_type == "generate":
             base_output["suggested_documents"] = self.suggested_documents
         else:
             base_output["editing_context"] = self.editing_context

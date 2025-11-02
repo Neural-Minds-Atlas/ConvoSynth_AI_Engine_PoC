@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, validator
 import structlog
 
 from src.db.mongodb import get_collection
-from src.db.models import OutlineAgentOutput, SlideOutline
+from src.db.models import OutlineAgentOutput
 
 # Import test payloads for example request bodies
 try:
@@ -138,7 +138,7 @@ class PresentationOutline(BaseModel):
     """Presentation outline model."""
     title: str = Field(..., description="Presentation title")
     subtitle: Optional[str] = Field(None, description="Presentation subtitle")
-    totalSlides: int = Field(..., ge=8, le=10, description="Total slides (8-10)")
+    totalSlides: int = Field(..., description="Total slides")
     narrativeFlow: str = Field(..., description="Narrative flow description")
     slides: List[Slide] = Field(..., description="Slide array")
 
@@ -396,20 +396,24 @@ class PerformanceMetrics(BaseModel):
 
 
 class OutlineResponse(BaseModel):
-    """Response model for outline operations."""
+    """Response model for outline operations - flexible to match agent output."""
     success: bool
     sessionId: str
     userId: str
     outlineId: str
     cycleType: str
-    presentationOutline: Optional[PresentationOutline] = None
-    outlineMetadata: Optional[OutlineMetadata] = None
-    qualityChecks: Optional[QualityChecks] = None
+    presentationOutline: Dict[str, Any]  # Raw outline object from agent
+    outlineMetadata: Dict[str, Any]  # Raw metadata object from agent
+    qualityChecks: Dict[str, Any]  # Raw quality checks from agent
     nextAction: str
     handoffToAgent: Optional[str] = None
-    performanceMetrics: PerformanceMetrics
+    performanceMetrics: Dict[str, Any]  # Raw performance metrics from agent
     timestamp: str
     error: Optional[str] = None
+
+    class Config:
+        # Allow arbitrary types for flexibility
+        arbitrary_types_allowed = True
 
 
 # ===================== Global Agent Instance =====================
@@ -501,29 +505,40 @@ async def generate_outline(request: OutlineGenerateRequest) -> OutlineResponse:
 
         output = result.output
 
-        # Save Outline Agent output to MongoDB
+        # Log raw agent output for debugging
+        logger.info("raw_agent_output", output_keys=list(output.keys()) if output else None)
+
+        # Agent now outputs complete structure directly - just pass it through
+        # Handle both snake_case (from agent) and camelCase (API standard)
+        presentation_outline = output.get("presentationOutline") or output.get("presentation_outline", {})
+        outline_metadata = output.get("outlineMetadata") or output.get("outline_metadata", {})
+        quality_checks = output.get("qualityChecks") or output.get("quality_checks", {})
+        next_action = output.get("nextAction") or output.get("next_action", "content_generation")
+        handoff_to_agent = output.get("handoffToAgent") or output.get("handoff_to_agent")
+        performance_metrics = output.get("performanceMetrics") or output.get("performance_metrics", {})
+        timestamp = output.get("timestamp", datetime.utcnow().isoformat())
+        error = output.get("error")
+
+        # Save Outline Agent output to MongoDB - save exact agent output
         try:
             outline_collection = get_collection("outlines")
 
-            # Convert slides from agent output to SlideOutline models
-            slides = []
-            for slide_data in output.get("outline", []):
-                slides.append(SlideOutline(
-                    slideNumber=slide_data.get("slide_number", 0),
-                    title=slide_data.get("title", ""),
-                    bulletPoints=slide_data.get("bullet_points", []),
-                    estimatedContentLength=slide_data.get("estimated_content_length", "medium"),
-                    visualSuggestion=slide_data.get("visual_suggestion"),
-                    narrativeNote=slide_data.get("speaker_notes")
-                ))
-
-            # Create Outline Agent Output document
+            # Create Outline Agent Output document with exact agent output structure
             outline_output = OutlineAgentOutput(
-                outline=slides,
-                narrativeFlow=output.get("narrative_flow", ""),
-                totalSlides=output.get("total_slides", 0),
-                estimatedDuration=None,
-                keyMessages=[]
+                success=True,
+                sessionId=request.sessionId,
+                userId=request.userId,
+                outlineId=outline_id,
+                cycleType="generate",
+                presentationOutline=presentation_outline,
+                outlineMetadata=outline_metadata,
+                qualityChecks=quality_checks,
+                nextAction=next_action,
+                handoffToAgent=handoff_to_agent,
+                performanceMetrics=performance_metrics,
+                timestamp=timestamp,
+                error=error,
+                createdAt=datetime.utcnow()
             )
 
             # Save to MongoDB
@@ -545,28 +560,21 @@ async def generate_outline(request: OutlineGenerateRequest) -> OutlineResponse:
 
         logger.info(f"Outline generated successfully: {outline_id}")
 
-        # Return simplified response
+        # Return exact agent output without transformation
         return {
             "success": True,
             "sessionId": request.sessionId,
             "userId": request.userId,
             "outlineId": outline_id,
-            "cycleType": "generation",
-            "presentationOutline": None,  # Keep structure compatible
-            "outlineMetadata": None,
-            "qualityChecks": None,
-            "nextAction": "content_generation",
-            "handoffToAgent": "content_agent",
-            "performanceMetrics": {
-                "responseTime": result.metadata.get("execution_time", 0.0),
-                "inputTokens": 0,
-                "outputTokens": 0,
-                "totalCost": 0.0,
-                "agentIterations": 1,
-                "toolCallsMade": 0
-            },
-            "timestamp": datetime.utcnow().isoformat(),
-            "error": None
+            "cycleType": "generate",
+            "presentationOutline": presentation_outline,
+            "outlineMetadata": outline_metadata,
+            "qualityChecks": quality_checks,
+            "nextAction": next_action,
+            "handoffToAgent": handoff_to_agent,
+            "performanceMetrics": performance_metrics,
+            "timestamp": timestamp,
+            "error": error
         }
         
     except HTTPException:
@@ -653,7 +661,7 @@ async def edit_outline(
             session_id=request.sessionId,
             user_id=request.userId,
             outline_id=outline_id,
-            cycle_type="editing",
+            cycle_type="edit",
             extracted_information=extracted_info,
             query_results=query_results,
             editing_context=editing_context,

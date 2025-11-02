@@ -32,7 +32,7 @@ CONTENT_GENERATE_EXAMPLE = {
         "sessionId": "session_bdx_stock_analysis_001",
         "userId": "user_portfolio_manager_123",
         "outlineId": "outline_bdx_001",
-        "cycleType": "generation",
+        "cycleType": "generate",
         "presentationOutline": {
             "title": "BDX Stock Performance Analysis",
             "subtitle": "August-September 2025 Comparison",
