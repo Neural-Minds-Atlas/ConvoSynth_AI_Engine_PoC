@@ -54,7 +54,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/outline",
-    tags=["agents"],
     responses={404: {"description": "Not found"}}
 )
 

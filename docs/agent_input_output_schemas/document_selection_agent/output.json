@@ -1,0 +1,27 @@
+{
+  "_id": "string",
+  "sessionId": "string",
+  "userId": "string",
+  "presentationId": "string",
+  "selectedDocuments": [
+    {
+      "documentId": "string",
+      "documentName": "string",
+      "documentType": "string",
+      "department": "string",
+      "relevanceScore": "number",
+      "selectionReason": "string",
+      "summary": "string",
+      "tags": ["string"],
+      "topics": ["string"],
+      "keyTopics": ["string"]
+    }
+  ],
+  "totalDocumentsEvaluated": "number",
+  "selectionCriteria": ["string"],
+  "validationResult": "string",
+  "nextAction": "string",
+  "handoffToAgent": "string",
+  "timestamp": "string",
+  "createdAt": "string"
+}

@@ -1,0 +1,59 @@
+{
+  "_id": "string",
+  "sessionId": "string",
+  "userId": "string",
+  "presentationId": "string",
+  "messages": [
+    {
+      "role": "string",
+      "content": "string",
+      "timestamp": "string"
+    }
+  ],
+  "extractedInfo": {
+    "cycleType": "string",
+    "presentationRequirements": {
+      "topic": "string",
+      "targetAudience": "string | null",
+      "numSlides": "number",
+      "keyThemes": ["string"],
+      "tone": "string | null",
+      "objectives": "string | null"
+    },
+    "dataRequirements": {
+      "documentsRequested": ["string"],
+      "contentToExtract": ["string"],
+      "metrics": ["string"],
+      "timePeriods": ["string"],
+      "comparisons": ["string"],
+      "dataCategories": ["string"]
+    },
+    "visualPreferences": {
+      "chartTypes": ["string"],
+      "style": "string | null",
+      "includeImages": "boolean | null",
+      "colorScheme": "string | null"
+    },
+    "editingRequirements": "string | null",
+    "rbacConcerns": ["string"],
+    "missingInformation": ["string"],
+    "confidenceScore": "number",
+    "conversationState": "string",
+    "isComplete": "boolean"
+  },
+  "rbacValidation": {
+    "allowedItems": ["string"],
+    "deniedItems": ["string"],
+    "explanation": "string",
+    "suggestedAlternatives": ["string"],
+    "professionalMessage": "string | null"
+  },
+  "nextAction": "string",
+  "handOffToAgent": "string | null",
+  "rbacWarnings": ["string"],
+  "suggestedDocuments": ["string"],
+  "totalCallsMade": "number",
+  "createdAt": "string",
+  "updatedAt": "string",
+  "__v": "number"
+}

@@ -5,7 +5,7 @@ from typing import Any
 import structlog
 from structlog.types import FilteringBoundLogger
 
-from app.config import settings
+from src.config import settings
 
 
 def setup_logging() -> None:

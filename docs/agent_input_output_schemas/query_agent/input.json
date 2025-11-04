@@ -1,0 +1,18 @@
+{
+  "_id": "string",
+  "sessionId": "string",
+  "userId": "string",
+  "presentationId": "string",
+  "dataRequirements": {
+    "documentsRequested": ["string"],
+    "contentToExtract": ["string"],
+    "metrics": ["string"],
+    "timePeriods": ["string"],
+    "comparisons": ["string"],
+    "dataCategories": ["string"]
+  },
+  "ragConfig": {
+    "rag_endpoint": "string"
+  },
+  "context": {}
+}

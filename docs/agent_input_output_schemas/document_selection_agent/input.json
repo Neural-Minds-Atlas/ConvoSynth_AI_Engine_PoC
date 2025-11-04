@@ -1,0 +1,26 @@
+{
+  "_id": "string",
+  "sessionId": "string",
+  "userId": "string",
+  "presentationId": "string",
+  "dataRequirements": {
+    "comparisons": ["string"],
+    "contentToExtract": ["string"],
+    "dataCategories": ["string"],
+    "documentsRequested": ["string"],
+    "metrics": ["string"],
+    "timePeriods": ["string"]
+  },
+  "accessibleDocuments": [
+    {
+      "documentId": "string",
+      "documentName": "string",
+      "docType": "string",
+      "department": "string",
+      "accessLevel": "string",
+      "summary": "string",
+      "tags": ["string"],
+      "topics": ["string"]
+    }
+  ]
+}

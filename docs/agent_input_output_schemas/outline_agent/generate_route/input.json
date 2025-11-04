@@ -1,0 +1,48 @@
+{
+  "_id": "string",
+  "sessionId": "string",
+  "userId": "string",
+  "presentationId": "string",
+  "extractedInformation": {
+    "presentationRequirements": {
+      "topic": "string",
+      "targetAudience": "string",
+      "numSlides": "number",
+      "keyThemes": ["string"],
+      "tone": "string",
+      "objectives": "string"
+    },
+    "dataRequirements": {
+      "documentsRequested": ["string"],
+      "contentToExtract": ["string"],
+      "metrics": ["string"],
+      "timePeriods": ["string"],
+      "comparisons": ["string"],
+      "dataCategories": ["string"]
+    },
+    "visualPreferences": {
+      "chartTypes": ["string"],
+      "style": "string",
+      "includeImages": "boolean",
+      "colorScheme": "string"
+    }
+  },
+  "queryResults": [
+    {
+      "queryId": "string",
+      "llmEnhancedAnswer": {
+        "answer": "string",
+        "confidence": "number",
+        "extractedData": {
+          "metrics": [
+            {
+              "metric_name": "string",
+              "value": "string",
+              "context": "string"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

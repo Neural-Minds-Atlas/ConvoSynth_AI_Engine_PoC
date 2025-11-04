@@ -1,0 +1,34 @@
+{
+  "_id": "string",
+  "sessionId": "string",
+  "presentationId": "string",
+  "message": "string",
+  "userProfile": {
+    "userId": "string",
+    "name": "string",
+    "role": "string",
+    "department": "string",
+    "accessScopes": ["string"],
+    "permissions": {
+      "viewFinancialData": "boolean",
+      "viewOperationalData": "boolean",
+      "viewHRData": "boolean",
+      "viewSalesData": "boolean",
+      "viewConfidentialData": "boolean",
+      "exportReports": "boolean"
+    }
+  },
+  "accessibleDocuments": [
+    {
+      "documentId": "string",
+      "documentName": "string",
+      "docType": "string",
+      "department": "string",
+      "accessLevel": "string",
+      "summary": "string",
+      "tags": ["string"],
+      "topics": ["string"]
+    }
+  ],
+  "context": {}
+}

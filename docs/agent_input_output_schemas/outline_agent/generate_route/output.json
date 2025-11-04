@@ -1,0 +1,72 @@
+{
+  "_id": "string",
+  "sessionId": "string",
+  "userId": "string",
+  "presentationId": "string",
+  "success": "boolean",
+  "cycleType": "string",
+  "presentationOutline": {
+    "title": "string",
+    "subtitle": "string",
+    "totalSlides": "number",
+    "narrativeFlow": "string",
+    "slides": [
+      {
+        "slideNumber": "number",
+        "slideType": "string",
+        "title": "string",
+        "bulletPoints": [
+          {
+            "bulletText": "string",
+            "subBullets": ["string"],
+            "requiresData": "boolean",
+            "dataMapping": {
+              "queryId": "string | null",
+              "metricName": "string | null",
+              "dataType": "string | null"
+            }
+          }
+        ],
+        "visualHints": [
+          {
+            "visualType": "string",
+            "chartType": "string | null",
+            "dataSource": "string",
+            "purpose": "string"
+          }
+        ],
+        "speakerNotes": "string",
+        "keyMessage": "string"
+      }
+    ],
+    "outlineMetadata": {
+      "templateCompliance": "boolean",
+      "slideCountCompliance": "boolean",
+      "narrativeCoherence": "number"
+    },
+    "dataIntegration": {
+      "totalDataPoints": "number",
+      "queriesReferenced": ["string"],
+      "coverageScore": "number"
+    },
+    "editingMetadata": "object | null",
+    "qualityChecks": {
+      "allSlidesHaveTitles": "boolean",
+      "bulletPointsWithinLimit": "boolean",
+      "visualHintsProvided": "boolean",
+      "dataBackedClaims": "boolean",
+      "logicalFlow": "boolean"
+    }
+  },
+  "validationResult": "string",
+  "nextAction": "string",
+  "handoffToAgent": "string",
+  "performanceMetrics": {
+    "responseTime": "number",
+    "agentIterations": "number",
+    "toolCallsMade": "number"
+  },
+  "timestamp": "string",
+  "error": "string | null",
+  "createdAt": "string"
+}

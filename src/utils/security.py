@@ -5,8 +5,8 @@ from typing import Optional, Dict, Any
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 
-from app.config import settings
-from app.utils.exceptions import AuthenticationException
+from src.config import settings
+from src.utils.exceptions import AuthenticationException
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

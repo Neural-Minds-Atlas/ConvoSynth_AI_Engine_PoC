@@ -1,0 +1,81 @@
+{
+  "_id": "string",
+  "sessionId": "string",
+  "presentationId": "string",
+  "userProfile": {
+    "userId": "string",
+    "name": "string",
+    "role": "string",
+    "department": "string",
+    "accessScopes": [
+      "string"
+    ],
+    "permissions": {
+      "viewFinancialData": "boolean",
+      "viewOperationalData": "boolean",
+      "viewHRData": "boolean",
+      "viewSalesData": "boolean",
+      "viewConfidentialData": "boolean",
+      "exportReports": "boolean"
+    }
+  },
+  "accessibleDocuments": [
+    "string"
+  ],
+  "editingContext": {
+    "isEditing": "boolean",
+    "previousExtractedInformation": {
+      "presentationRequirements": {
+        "topic": "string",
+        "targetAudience": "string | null",
+        "numSlides": "number",
+        "keyThemes": [
+          "string"
+        ],
+        "tone": "string | null",
+        "objectives": "string | null"
+      },
+      "dataRequirements": {
+        "documentsRequested": [
+          "string"
+        ],
+        "contentToExtract": [
+          "string"
+        ],
+        "metrics": [
+          "string"
+        ],
+        "timePeriods": [
+          "string"
+        ],
+        "comparisons": [
+          "string"
+        ],
+        "dataCategories": [
+          "string"
+        ]
+      },
+      "visualPreferences": {
+        "chartTypes": [
+          "string"
+        ],
+        "style": "string | null",
+        "includeImages": "boolean | null",
+        "colorScheme": "string | null"
+      },
+      "editingRequirements": "string | null",
+      "rbacConcerns": [
+        "string"
+      ],
+      "missingInformation": [
+        "string"
+      ],
+      "confidenceScore": "number",
+      "conversationState": "string",
+      "isComplete": "boolean"
+    },
+    "editQuery": "string",
+    "editType": "string"
+  },
+  "context": {}
+}

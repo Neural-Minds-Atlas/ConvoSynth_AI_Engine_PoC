@@ -1,0 +1,222 @@
+[
+  {
+    "id": "chart-12523358-f5a3-403d-b627-d78c525fcd65",
+    "cfg": {
+      "type": "line",
+      "data": {
+        "labels": [
+          "Label 1",
+          "Label 2",
+          "Label 3",
+          "Label"
+        ],
+        "datasets": [
+          {
+            "label": "Series 1",
+            "data": [
+              35,
+              25,
+              40,
+              0
+            ],
+            "backgroundColor": [
+              "#2376DD",
+              "#10B981",
+              "#F59E0B",
+              "#F59E0B"
+            ],
+            "borderColor": [
+              "#2376DD",
+              "#10B981",
+              "#F59E0B"
+            ]
+          }
+        ]
+      },
+      "options": {
+        "format": "number",
+        "title": "Chart Title",
+        "textProperties": {
+          "fontFamily": "Arial",
+          "fontSize": 40,
+          "color": "#000000"
+        },
+        "responsive": true,
+        "maintainAspectRatio": false,
+        "animation": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "enabled": false
+          },
+          "title": {
+            "display": true,
+            "text": "Chart Title"
+          }
+        }
+      }
+    },
+    "exportScale": 0.7
+  },
+  {
+    "id": "chart-38d27300-1feb-4329-9dca-785f6ccf7783",
+    "cfg": {
+      "type": "bar",
+      "data": {
+        "labels": [
+          "Label 1",
+          "Label 2",
+          "Label 3"
+        ],
+        "datasets": [
+          {
+            "label": "Series 1",
+            "data": [
+              35,
+              25,
+              40
+            ],
+            "backgroundColor": [
+              "#2376DD",
+              "#10B981",
+              "#F59E0B"
+            ]
+          }
+        ]
+      },
+      "options": {
+        "format": "number",
+        "title": "Chart Title",
+        "textProperties": {
+          "fontFamily": "Poppins",
+          "fontSize": 14,
+          "color": "#000000"
+        },
+        "responsive": true,
+        "maintainAspectRatio": false,
+        "animation": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "enabled": false
+          },
+          "title": {
+            "display": true,
+            "text": "Chart Title"
+          }
+        }
+      }
+    },
+    "exportScale": 0.7
+  },
+  {
+    "id": "chart-104d63d8-51c0-455c-8a6e-8ce62bd0091c",
+    "cfg": {
+      "type": "pie",
+      "data": {
+        "labels": [
+          "Label 1",
+          "Label 2",
+          "Label 3"
+        ],
+        "datasets": [
+          {
+            "label": "Series 1",
+            "data": [
+              35,
+              25,
+              40
+            ],
+            "backgroundColor": [
+              "#2376DD",
+              "#10B981",
+              "#F59E0B"
+            ]
+          }
+        ]
+      },
+      "options": {
+        "format": "number",
+        "title": "Chart Title",
+        "textProperties": {
+          "fontFamily": "Poppins",
+          "fontSize": 14,
+          "color": "#000000"
+        },
+        "responsive": true,
+        "maintainAspectRatio": false,
+        "animation": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "enabled": false
+          },
+          "title": {
+            "display": true,
+            "text": "Chart Title"
+          }
+        }
+      }
+    },
+    "exportScale": 0.7
+  },
+  {
+    "id": "chart-9283e461-752e-4982-ade7-d2872d2970d8",
+    "cfg": {
+      "type": "line",
+      "data": {
+        "labels": [
+          "Label 1",
+          "Label 2",
+          "Label 3"
+        ],
+        "datasets": [
+          {
+            "label": "Series 1",
+            "data": [
+              35,
+              25,
+              40
+            ],
+            "backgroundColor": [
+              "#2376DD",
+              "#10B981",
+              "#F59E0B"
+            ]
+          }
+        ]
+      },
+      "options": {
+        "format": "number",
+        "title": "Chart Title",
+        "textProperties": {
+          "fontFamily": "Poppins",
+          "fontSize": 14,
+          "color": "#000000"
+        },
+        "responsive": true,
+        "maintainAspectRatio": false,
+        "animation": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "enabled": false
+          },
+          "title": {
+            "display": true,
+            "text": "Chart Title"
+          }
+        }
+      }
+    },
+    "exportScale": 0.7
+  }
+]

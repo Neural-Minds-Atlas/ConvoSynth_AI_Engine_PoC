@@ -1,0 +1,1636 @@
+[
+  {
+    "visualType": "chart",
+    "chartType": "bar_chart",
+    "dataSource": "BDX Stock Historical Prices & Data - Yahoo Finance",
+    "dataValue": "Monthly average closing prices and trading volumes for July-September 2025",
+    "purpose": "Visual representation of two-month timeline showing BDX stock performance trends and trading activity to support risk vs rebound analysis",
+    "xAxisLabel": "Month",
+    "yAxisLabel": "Average Closing Price (USD) / Volume (Millions)",
+    "title": "BDX Two-Month Performance Overview: July-September 2025",
+    "dataPoints": [
+      {
+        "x": "July 2025",
+        "y": 176.85,
+        "label": "July Avg Price",
+        "category": "price",
+        "volume": 3.2
+      },
+      {
+        "x": "August 2025",
+        "y": 190.45,
+        "label": "August Avg Price",
+        "category": "price",
+        "volume": 2.4
+      },
+      {
+        "x": "September 2025",
+        "y": 189.12,
+        "label": "September Avg Price",
+        "category": "price",
+        "volume": 1.6
+      }
+    ],
+    "colorScheme": "Corporate blue (#1f4e79) for prices, corporate green (#2d5016) for volume bars",
+    "annotations": [
+      "Recovery from July lows ($172-$180 range)",
+      "Peak volatility in August ($172-$200 range)",
+      "Dividend payment Sept 8: $1.04",
+      "Current price: $186.84 (-1.95%)",
+      "Volume declining trend indicates stabilization"
+    ]
+  },
+  {
+    "visualType": "chart",
+    "chartType": "candlestick_chart",
+    "dataSource": "bdx_aug_2025_metrics",
+    "dataValue": "Daily OHLC (Open, High, Low, Close) prices and trading volume for BDX stock in August 2025",
+    "purpose": "Show daily price movements and volatility in August 2025, highlighting the recovery phase with high volatility patterns",
+    "xAxisLabel": "Date (August 2025)",
+    "yAxisLabel": "Price (USD)",
+    "title": "BDX Daily Price Movements - August 2025 Volatility Recovery",
+    "dataPoints": [
+      {
+        "x": "2025-08-05",
+        "open": 178.9,
+        "high": 179.68,
+        "low": 176.11,
+        "close": 176.89,
+        "volume": 2859300,
+        "label": "Aug 5"
+      },
+      {
+        "x": "2025-08-06",
+        "open": 176.88,
+        "high": 177.39,
+        "low": 172.2,
+        "close": 172.41,
+        "volume": 4225900,
+        "label": "Aug 6"
+      },
+      {
+        "x": "2025-08-07",
+        "open": 187.35,
+        "high": 190.12,
+        "low": 184.21,
+        "close": 187.68,
+        "volume": 4838100,
+        "label": "Aug 7"
+      },
+      {
+        "x": "2025-08-08",
+        "open": 186.87,
+        "high": 193.88,
+        "low": 186.87,
+        "close": 193.5,
+        "volume": 3955400,
+        "label": "Aug 8"
+      },
+      {
+        "x": "2025-08-11",
+        "open": 193.55,
+        "high": 194.41,
+        "low": 190.51,
+        "close": 192.5,
+        "volume": 2770600,
+        "label": "Aug 11"
+      },
+      {
+        "x": "2025-08-12",
+        "open": 193.5,
+        "high": 194.99,
+        "low": 192.39,
+        "close": 194.96,
+        "volume": 3171300,
+        "label": "Aug 12"
+      },
+      {
+        "x": "2025-08-13",
+        "open": 195.21,
+        "high": 196.27,
+        "low": 193.94,
+        "close": 195.96,
+        "volume": 2671800,
+        "label": "Aug 13"
+      },
+      {
+        "x": "2025-08-14",
+        "open": 195.35,
+        "high": 195.57,
+        "low": 193.4,
+        "close": 195,
+        "volume": 2284300,
+        "label": "Aug 14"
+      },
+      {
+        "x": "2025-08-15",
+        "open": 196,
+        "high": 196.99,
+        "low": 194.64,
+        "close": 195.94,
+        "volume": 2616800,
+        "label": "Aug 15"
+      },
+      {
+        "x": "2025-08-18",
+        "open": 195.82,
+        "high": 197.42,
+        "low": 194.96,
+        "close": 195,
+        "volume": 1763400,
+        "label": "Aug 18"
+      },
+      {
+        "x": "2025-08-19",
+        "open": 194.82,
+        "high": 198.26,
+        "low": 194.27,
+        "close": 198.03,
+        "volume": 1902200,
+        "label": "Aug 19"
+      },
+      {
+        "x": "2025-08-20",
+        "open": 198.06,
+        "high": 200.22,
+        "low": 197.47,
+        "close": 199.2,
+        "volume": 2493500,
+        "label": "Aug 20"
+      },
+      {
+        "x": "2025-08-21",
+        "open": 198.46,
+        "high": 198.85,
+        "low": 196.37,
+        "close": 196.63,
+        "volume": 1304200,
+        "label": "Aug 21"
+      },
+      {
+        "x": "2025-08-22",
+        "open": 197.83,
+        "high": 200.21,
+        "low": 197.24,
+        "close": 199.66,
+        "volume": 1619800,
+        "label": "Aug 22"
+      },
+      {
+        "x": "2025-08-25",
+        "open": 199.3,
+        "high": 199.48,
+        "low": 194.03,
+        "close": 194.65,
+        "volume": 1227500,
+        "label": "Aug 25"
+      },
+      {
+        "x": "2025-08-26",
+        "open": 194.08,
+        "high": 195.23,
+        "low": 193.5,
+        "close": 194.07,
+        "volume": 2245200,
+        "label": "Aug 26"
+      },
+      {
+        "x": "2025-08-27",
+        "open": 193.64,
+        "high": 195.65,
+        "low": 193.64,
+        "close": 195.4,
+        "volume": 1330700,
+        "label": "Aug 27"
+      },
+      {
+        "x": "2025-08-28",
+        "open": 195.3,
+        "high": 195.3,
+        "low": 190.74,
+        "close": 191.25,
+        "volume": 1793900,
+        "label": "Aug 28"
+      },
+      {
+        "x": "2025-08-29",
+        "open": 191.76,
+        "high": 193.04,
+        "low": 191,
+        "close": 192.98,
+        "volume": 1329500,
+        "label": "Aug 29"
+      }
+    ],
+    "colorScheme": "Corporate",
+    "annotations": [
+      "Month low: $172.41 on Aug 6",
+      "Month high: $200.22 on Aug 20",
+      "Recovery surge: Aug 6-8 (+$21.09)",
+      "Peak volatility period: Aug 5-8",
+      "Highest volume: 4.84M on Aug 7"
+    ]
+  },
+  {
+    "visualType": "chart",
+    "chartType": "line_chart",
+    "dataSource": "BDX Stock Historical Prices (table)",
+    "dataValue": "Daily closing prices showing recovery trajectory from August low to September high",
+    "purpose": "Highlight recovery trajectory from low to high during August 2025 high volatility recovery phase",
+    "xAxisLabel": "Date",
+    "yAxisLabel": "Stock Price (USD)",
+    "title": "BDX Recovery Trajectory: August-September 2025",
+    "dataPoints": [
+      {
+        "x": "2025-08-05",
+        "y": 176.89,
+        "label": "Aug 5"
+      },
+      {
+        "x": "2025-08-06",
+        "y": 172.41,
+        "label": "Aug 6 - Low Point"
+      },
+      {
+        "x": "2025-08-07",
+        "y": 187.68,
+        "label": "Aug 7"
+      },
+      {
+        "x": "2025-08-08",
+        "y": 193.5,
+        "label": "Aug 8"
+      },
+      {
+        "x": "2025-08-11",
+        "y": 192.5,
+        "label": "Aug 11"
+      },
+      {
+        "x": "2025-08-12",
+        "y": 194.96,
+        "label": "Aug 12"
+      },
+      {
+        "x": "2025-08-13",
+        "y": 195.96,
+        "label": "Aug 13"
+      },
+      {
+        "x": "2025-08-14",
+        "y": 195,
+        "label": "Aug 14"
+      },
+      {
+        "x": "2025-08-15",
+        "y": 195.94,
+        "label": "Aug 15"
+      },
+      {
+        "x": "2025-08-18",
+        "y": 195,
+        "label": "Aug 18"
+      },
+      {
+        "x": "2025-08-19",
+        "y": 198.03,
+        "label": "Aug 19"
+      },
+      {
+        "x": "2025-08-20",
+        "y": 199.2,
+        "label": "Aug 20"
+      },
+      {
+        "x": "2025-08-21",
+        "y": 196.63,
+        "label": "Aug 21"
+      },
+      {
+        "x": "2025-08-22",
+        "y": 199.66,
+        "label": "Aug 22 - Recovery Peak"
+      },
+      {
+        "x": "2025-08-25",
+        "y": 194.65,
+        "label": "Aug 25"
+      },
+      {
+        "x": "2025-08-26",
+        "y": 194.07,
+        "label": "Aug 26"
+      },
+      {
+        "x": "2025-08-27",
+        "y": 195.4,
+        "label": "Aug 27"
+      },
+      {
+        "x": "2025-08-28",
+        "y": 191.25,
+        "label": "Aug 28"
+      },
+      {
+        "x": "2025-08-29",
+        "y": 192.98,
+        "label": "Aug 29"
+      },
+      {
+        "x": "2025-09-02",
+        "y": 188.15,
+        "label": "Sep 2"
+      },
+      {
+        "x": "2025-09-03",
+        "y": 189.61,
+        "label": "Sep 3"
+      },
+      {
+        "x": "2025-09-04",
+        "y": 191.26,
+        "label": "Sep 4"
+      },
+      {
+        "x": "2025-09-05",
+        "y": 192.39,
+        "label": "Sep 5"
+      },
+      {
+        "x": "2025-09-08",
+        "y": 191.58,
+        "label": "Sep 8"
+      },
+      {
+        "x": "2025-09-09",
+        "y": 190.49,
+        "label": "Sep 9"
+      },
+      {
+        "x": "2025-09-10",
+        "y": 188.43,
+        "label": "Sep 10"
+      },
+      {
+        "x": "2025-09-11",
+        "y": 190.56,
+        "label": "Sep 11"
+      },
+      {
+        "x": "2025-09-12",
+        "y": 186.84,
+        "label": "Sep 12"
+      }
+    ],
+    "colorScheme": "Corporate",
+    "annotations": [
+      "Lowest point: $172.41 on Aug 6",
+      "Recovery peak: $199.66 on Aug 22",
+      "15.8% recovery from low to peak",
+      "High volatility period with strong upward momentum",
+      "Dividend payment: $1.04 on Sep 8"
+    ]
+  },
+  {
+    "visualType": "chart",
+    "chartType": "line_chart",
+    "dataSource": "bdx_sep_2025_metrics",
+    "dataValue": "Daily closing prices comparing August and September 2025 to show price stability trends",
+    "purpose": "Display September price stability compared to August, demonstrating consolidation and reduced volatility",
+    "xAxisLabel": "Date",
+    "yAxisLabel": "Stock Price (USD)",
+    "title": "BDX Price Stability: August vs September 2025",
+    "dataPoints": [
+      {
+        "x": "2025-08-05",
+        "y": 176.89,
+        "label": "Aug 5"
+      },
+      {
+        "x": "2025-08-06",
+        "y": 172.41,
+        "label": "Aug 6"
+      },
+      {
+        "x": "2025-08-07",
+        "y": 187.68,
+        "label": "Aug 7"
+      },
+      {
+        "x": "2025-08-08",
+        "y": 193.5,
+        "label": "Aug 8"
+      },
+      {
+        "x": "2025-08-11",
+        "y": 192.5,
+        "label": "Aug 11"
+      },
+      {
+        "x": "2025-08-12",
+        "y": 194.96,
+        "label": "Aug 12"
+      },
+      {
+        "x": "2025-08-13",
+        "y": 195.96,
+        "label": "Aug 13"
+      },
+      {
+        "x": "2025-08-14",
+        "y": 195,
+        "label": "Aug 14"
+      },
+      {
+        "x": "2025-08-15",
+        "y": 195.94,
+        "label": "Aug 15"
+      },
+      {
+        "x": "2025-08-18",
+        "y": 195,
+        "label": "Aug 18"
+      },
+      {
+        "x": "2025-08-19",
+        "y": 198.03,
+        "label": "Aug 19"
+      },
+      {
+        "x": "2025-08-20",
+        "y": 199.2,
+        "label": "Aug 20"
+      },
+      {
+        "x": "2025-08-21",
+        "y": 196.63,
+        "label": "Aug 21"
+      },
+      {
+        "x": "2025-08-22",
+        "y": 199.66,
+        "label": "Aug 22"
+      },
+      {
+        "x": "2025-08-25",
+        "y": 194.65,
+        "label": "Aug 25"
+      },
+      {
+        "x": "2025-08-26",
+        "y": 194.07,
+        "label": "Aug 26"
+      },
+      {
+        "x": "2025-08-27",
+        "y": 195.4,
+        "label": "Aug 27"
+      },
+      {
+        "x": "2025-08-28",
+        "y": 191.25,
+        "label": "Aug 28"
+      },
+      {
+        "x": "2025-08-29",
+        "y": 192.98,
+        "label": "Aug 29"
+      },
+      {
+        "x": "2025-09-02",
+        "y": 188.15,
+        "label": "Sep 2"
+      },
+      {
+        "x": "2025-09-03",
+        "y": 189.61,
+        "label": "Sep 3"
+      },
+      {
+        "x": "2025-09-04",
+        "y": 191.26,
+        "label": "Sep 4"
+      },
+      {
+        "x": "2025-09-05",
+        "y": 192.39,
+        "label": "Sep 5"
+      },
+      {
+        "x": "2025-09-08",
+        "y": 191.58,
+        "label": "Sep 8"
+      },
+      {
+        "x": "2025-09-09",
+        "y": 190.49,
+        "label": "Sep 9"
+      },
+      {
+        "x": "2025-09-10",
+        "y": 188.43,
+        "label": "Sep 10"
+      },
+      {
+        "x": "2025-09-11",
+        "y": 190.56,
+        "label": "Sep 11"
+      },
+      {
+        "x": "2025-09-12",
+        "y": 186.84,
+        "label": "Sep 12"
+      }
+    ],
+    "colorScheme": "Corporate",
+    "annotations": [
+      "August volatility: $172.41 - $199.66 range",
+      "September consolidation: $186.84 - $192.39 range",
+      "Dividend payment Sep 8: $1.04",
+      "Reduced volatility in September",
+      "Price stabilization around $190 level"
+    ]
+  },
+  {
+    "visualType": "chart",
+    "chartType": "bar_chart",
+    "dataSource": "bdx_sep_2025_metrics",
+    "dataValue": "Daily trading volumes for BDX stock from August 29 to September 12, 2025",
+    "purpose": "Show trading volumes with dividend date highlighted to demonstrate market activity patterns around corporate actions",
+    "xAxisLabel": "Date",
+    "yAxisLabel": "Trading Volume (Millions of Shares)",
+    "title": "BDX Trading Volumes - September 2025 with Dividend Date",
+    "dataPoints": [
+      {
+        "x": "2025-08-29",
+        "y": 1.33,
+        "label": "Aug 29"
+      },
+      {
+        "x": "2025-09-02",
+        "y": 1.63,
+        "label": "Sep 2"
+      },
+      {
+        "x": "2025-09-03",
+        "y": 3.62,
+        "label": "Sep 3"
+      },
+      {
+        "x": "2025-09-04",
+        "y": 1.28,
+        "label": "Sep 4"
+      },
+      {
+        "x": "2025-09-05",
+        "y": 1.24,
+        "label": "Sep 5"
+      },
+      {
+        "x": "2025-09-08",
+        "y": 2.6,
+        "label": "Sep 8 (Dividend)"
+      },
+      {
+        "x": "2025-09-09",
+        "y": 1.51,
+        "label": "Sep 9"
+      },
+      {
+        "x": "2025-09-10",
+        "y": 1.87,
+        "label": "Sep 10"
+      },
+      {
+        "x": "2025-09-11",
+        "y": 1.57,
+        "label": "Sep 11"
+      },
+      {
+        "x": "2025-09-12",
+        "y": 1.12,
+        "label": "Sep 12"
+      }
+    ],
+    "colorScheme": "Corporate blue with dividend date highlighted in corporate green",
+    "annotations": [
+      "Dividend payment of $1.04 on Sep 8, 2025",
+      "Volume spike on Sep 8 (2.60M shares)",
+      "High volume on Sep 3 (3.62M shares)",
+      "Declining volume trend post-dividend"
+    ]
+  },
+  {
+    "visualType": "chart",
+    "chartType": "bar_chart",
+    "dataSource": "aug_sep_comparison",
+    "dataValue": "Monthly averages of key stock metrics comparing August vs September 2025",
+    "purpose": "Side-by-side comparison of key metrics between August and September to assess monthly performance trends",
+    "xAxisLabel": "Metrics",
+    "yAxisLabel": "Value",
+    "title": "August vs September: Key Metrics Comparison",
+    "dataPoints": [
+      {
+        "x": "Avg Close Price",
+        "y": 194.85,
+        "label": "August",
+        "category": "August"
+      },
+      {
+        "x": "Avg Close Price",
+        "y": 189.32,
+        "label": "September",
+        "category": "September"
+      },
+      {
+        "x": "Avg Volume (M)",
+        "y": 2.01,
+        "label": "August",
+        "category": "August"
+      },
+      {
+        "x": "Avg Volume (M)",
+        "y": 1.64,
+        "label": "September",
+        "category": "September"
+      },
+      {
+        "x": "Price Volatility",
+        "y": 8.45,
+        "label": "August",
+        "category": "August"
+      },
+      {
+        "x": "Price Volatility",
+        "y": 4.12,
+        "label": "September",
+        "category": "September"
+      },
+      {
+        "x": "Monthly High",
+        "y": 200.22,
+        "label": "August",
+        "category": "August"
+      },
+      {
+        "x": "Monthly High",
+        "y": 192.39,
+        "label": "September",
+        "category": "September"
+      },
+      {
+        "x": "Monthly Low",
+        "y": 172.41,
+        "label": "August",
+        "category": "August"
+      },
+      {
+        "x": "Monthly Low",
+        "y": 186.84,
+        "label": "September",
+        "category": "September"
+      }
+    ],
+    "colorScheme": "Corporate blue (#2E5BBA) for August, Corporate green (#28A745) for September",
+    "annotations": [
+      "August showed higher average closing price ($194.85 vs $189.32)",
+      "September had lower volatility (4.12 vs 8.45 range)",
+      "Trading volume decreased 18% from August to September",
+      "September maintained more stable price floor ($186.84 vs $172.41)",
+      "Dividend of $1.04 paid on Sep 8, 2025"
+    ]
+  },
+  {
+    "visualType": "table",
+    "chartType": "bar_chart",
+    "dataSource": "aug_sep_comparison",
+    "dataValue": "Monthly comparison of BDX stock metrics between August and September 2025",
+    "purpose": "Detailed numeric comparison table showing key performance metrics between August and September to assess monthly trends",
+    "xAxisLabel": "Metrics",
+    "yAxisLabel": "Value (USD/Volume)",
+    "title": "August vs September 2025: BDX Stock Performance Comparison",
+    "dataPoints": [
+      {
+        "x": "Aug Avg Close",
+        "y": 194.12,
+        "label": "August Average Close"
+      },
+      {
+        "x": "Sep Avg Close",
+        "y": 189.75,
+        "label": "September Average Close"
+      },
+      {
+        "x": "Aug High",
+        "y": 200.22,
+        "label": "August Peak"
+      },
+      {
+        "x": "Sep High",
+        "y": 192.98,
+        "label": "September Peak"
+      },
+      {
+        "x": "Aug Low",
+        "y": 172.2,
+        "label": "August Low"
+      },
+      {
+        "x": "Sep Low",
+        "y": 183.73,
+        "label": "September Low"
+      },
+      {
+        "x": "Aug Avg Volume",
+        "y": 2.18,
+        "label": "August Avg Volume (M)"
+      },
+      {
+        "x": "Sep Avg Volume",
+        "y": 1.68,
+        "label": "September Avg Volume (M)"
+      },
+      {
+        "x": "Aug Volatility",
+        "y": 28.02,
+        "label": "August Price Range"
+      },
+      {
+        "x": "Sep Volatility",
+        "y": 9.25,
+        "label": "September Price Range"
+      },
+      {
+        "x": "Aug Start",
+        "y": 176.89,
+        "label": "August Opening"
+      },
+      {
+        "x": "Sep Start",
+        "y": 192.39,
+        "label": "September Opening"
+      },
+      {
+        "x": "Aug End",
+        "y": 192.98,
+        "label": "August Closing"
+      },
+      {
+        "x": "Sep End",
+        "y": 186.84,
+        "label": "September Closing"
+      }
+    ],
+    "colorScheme": "Corporate",
+    "annotations": [
+      "September showed reduced volatility (9.25 vs 28.02 range)",
+      "August had 30% higher trading volume on average",
+      "Peak performance in August at $200.22",
+      "September decline of -2.9% from August close",
+      "Dividend of $1.04 issued on Sep 8, 2025"
+    ]
+  },
+  {
+    "visualType": "chart",
+    "chartType": "line_chart",
+    "dataSource": "BDX Stock Historical Prices & Data - Yahoo Finance",
+    "dataValue": "Daily closing prices showing two-phase pattern from June to September 2025",
+    "purpose": "Show two-phase pattern visually with trend lines depicting recovery phase followed by consolidation phase",
+    "xAxisLabel": "Date",
+    "yAxisLabel": "Stock Price (USD)",
+    "title": "BDX Two-Phase Pattern: Recovery → Consolidation (Jun-Sep 2025)",
+    "dataPoints": [
+      {
+        "x": "2025-06-17",
+        "y": 169.94,
+        "label": "Jun 17"
+      },
+      {
+        "x": "2025-06-18",
+        "y": 168.42,
+        "label": "Jun 18"
+      },
+      {
+        "x": "2025-06-20",
+        "y": 168.16,
+        "label": "Jun 20"
+      },
+      {
+        "x": "2025-06-23",
+        "y": 169.72,
+        "label": "Jun 23"
+      },
+      {
+        "x": "2025-06-24",
+        "y": 171.57,
+        "label": "Jun 24"
+      },
+      {
+        "x": "2025-06-25",
+        "y": 170.9,
+        "label": "Jun 25"
+      },
+      {
+        "x": "2025-06-26",
+        "y": 169.97,
+        "label": "Jun 26"
+      },
+      {
+        "x": "2025-06-27",
+        "y": 170.86,
+        "label": "Jun 27"
+      },
+      {
+        "x": "2025-06-30",
+        "y": 172.25,
+        "label": "Jun 30"
+      },
+      {
+        "x": "2025-07-01",
+        "y": 177.67,
+        "label": "Jul 1"
+      },
+      {
+        "x": "2025-07-02",
+        "y": 177.27,
+        "label": "Jul 2"
+      },
+      {
+        "x": "2025-07-03",
+        "y": 176.16,
+        "label": "Jul 3"
+      },
+      {
+        "x": "2025-07-07",
+        "y": 172.95,
+        "label": "Jul 7"
+      },
+      {
+        "x": "2025-07-08",
+        "y": 174.63,
+        "label": "Jul 8"
+      },
+      {
+        "x": "2025-07-09",
+        "y": 175.5,
+        "label": "Jul 9"
+      },
+      {
+        "x": "2025-07-10",
+        "y": 177.5,
+        "label": "Jul 10"
+      },
+      {
+        "x": "2025-07-11",
+        "y": 175.97,
+        "label": "Jul 11"
+      },
+      {
+        "x": "2025-07-14",
+        "y": 177.09,
+        "label": "Jul 14"
+      },
+      {
+        "x": "2025-07-15",
+        "y": 178.31,
+        "label": "Jul 15"
+      },
+      {
+        "x": "2025-07-16",
+        "y": 180.9,
+        "label": "Jul 16"
+      },
+      {
+        "x": "2025-07-17",
+        "y": 178.85,
+        "label": "Jul 17"
+      },
+      {
+        "x": "2025-07-18",
+        "y": 175.33,
+        "label": "Jul 18"
+      },
+      {
+        "x": "2025-07-22",
+        "y": 181.28,
+        "label": "Jul 22"
+      },
+      {
+        "x": "2025-07-23",
+        "y": 182.58,
+        "label": "Jul 23"
+      },
+      {
+        "x": "2025-07-24",
+        "y": 183.63,
+        "label": "Jul 24"
+      },
+      {
+        "x": "2025-07-25",
+        "y": 185.32,
+        "label": "Jul 25"
+      },
+      {
+        "x": "2025-07-28",
+        "y": 182.94,
+        "label": "Jul 28"
+      },
+      {
+        "x": "2025-07-29",
+        "y": 182.38,
+        "label": "Jul 29"
+      },
+      {
+        "x": "2025-08-05",
+        "y": 176.89,
+        "label": "Aug 5"
+      },
+      {
+        "x": "2025-08-06",
+        "y": 172.41,
+        "label": "Aug 6"
+      },
+      {
+        "x": "2025-08-07",
+        "y": 187.68,
+        "label": "Aug 7"
+      },
+      {
+        "x": "2025-08-08",
+        "y": 193.5,
+        "label": "Aug 8"
+      },
+      {
+        "x": "2025-08-11",
+        "y": 192.5,
+        "label": "Aug 11"
+      },
+      {
+        "x": "2025-08-12",
+        "y": 194.96,
+        "label": "Aug 12"
+      },
+      {
+        "x": "2025-08-13",
+        "y": 195.96,
+        "label": "Aug 13"
+      },
+      {
+        "x": "2025-08-14",
+        "y": 195,
+        "label": "Aug 14"
+      },
+      {
+        "x": "2025-08-15",
+        "y": 195.94,
+        "label": "Aug 15"
+      },
+      {
+        "x": "2025-08-18",
+        "y": 195,
+        "label": "Aug 18"
+      },
+      {
+        "x": "2025-08-19",
+        "y": 198.03,
+        "label": "Aug 19"
+      },
+      {
+        "x": "2025-08-20",
+        "y": 199.2,
+        "label": "Aug 20"
+      },
+      {
+        "x": "2025-08-21",
+        "y": 196.63,
+        "label": "Aug 21"
+      },
+      {
+        "x": "2025-08-22",
+        "y": 199.66,
+        "label": "Aug 22"
+      },
+      {
+        "x": "2025-08-25",
+        "y": 194.65,
+        "label": "Aug 25"
+      },
+      {
+        "x": "2025-08-26",
+        "y": 194.07,
+        "label": "Aug 26"
+      },
+      {
+        "x": "2025-08-27",
+        "y": 195.4,
+        "label": "Aug 27"
+      },
+      {
+        "x": "2025-08-28",
+        "y": 191.25,
+        "label": "Aug 28"
+      },
+      {
+        "x": "2025-08-29",
+        "y": 192.98,
+        "label": "Aug 29"
+      },
+      {
+        "x": "2025-09-02",
+        "y": 188.15,
+        "label": "Sep 2"
+      },
+      {
+        "x": "2025-09-03",
+        "y": 189.61,
+        "label": "Sep 3"
+      },
+      {
+        "x": "2025-09-04",
+        "y": 191.26,
+        "label": "Sep 4"
+      },
+      {
+        "x": "2025-09-05",
+        "y": 192.39,
+        "label": "Sep 5"
+      },
+      {
+        "x": "2025-09-08",
+        "y": 191.58,
+        "label": "Sep 8"
+      },
+      {
+        "x": "2025-09-09",
+        "y": 190.49,
+        "label": "Sep 9"
+      },
+      {
+        "x": "2025-09-10",
+        "y": 188.43,
+        "label": "Sep 10"
+      },
+      {
+        "x": "2025-09-11",
+        "y": 190.56,
+        "label": "Sep 11"
+      },
+      {
+        "x": "2025-09-12",
+        "y": 186.84,
+        "label": "Sep 12"
+      }
+    ],
+    "colorScheme": "Corporate",
+    "annotations": [
+      "Phase 1: Recovery from $168 low (Jun-Aug)",
+      "Peak at $199.66 (Aug 22)",
+      "Phase 2: Consolidation around $190 (Sep)",
+      "Trend line break at Aug 6 ($172.41)",
+      "Support level established at $186-$192"
+    ]
+  },
+  {
+    "visualType": "chart",
+    "chartType": "bar_chart",
+    "dataSource": "BDX Stock Historical Prices & Data",
+    "dataValue": "Weekly average closing prices showing recovery-consolidation cycle from July to September 2025",
+    "purpose": "Visual representation of recovery-consolidation cycle showing two distinct phases in BDX stock performance",
+    "xAxisLabel": "Time Period (Weekly)",
+    "yAxisLabel": "Average Closing Price (USD)",
+    "title": "BDX Recovery-Consolidation Cycle: Two-Phase Pattern",
+    "dataPoints": [
+      {
+        "x": "Jul Week 3",
+        "y": 175.85,
+        "label": "Recovery Start"
+      },
+      {
+        "x": "Jul Week 4",
+        "y": 178.42,
+        "label": "Early Recovery"
+      },
+      {
+        "x": "Aug Week 1",
+        "y": 182.15,
+        "label": "Recovery Phase"
+      },
+      {
+        "x": "Aug Week 2",
+        "y": 194.25,
+        "label": "Peak Recovery"
+      },
+      {
+        "x": "Aug Week 3",
+        "y": 197.8,
+        "label": "Recovery High"
+      },
+      {
+        "x": "Aug Week 4",
+        "y": 193.45,
+        "label": "Consolidation Start"
+      },
+      {
+        "x": "Sep Week 1",
+        "y": 190.25,
+        "label": "Consolidation"
+      },
+      {
+        "x": "Sep Week 2",
+        "y": 188.65,
+        "label": "Stable Consolidation"
+      }
+    ],
+    "colorScheme": "Corporate blue gradient with green accent for recovery phase",
+    "annotations": [
+      "Recovery Phase: 175.85 to 197.80 (+12.5%)",
+      "Consolidation Phase: 197.80 to 188.65 (-4.6%)",
+      "Peak at Aug Week 3: $197.80",
+      "Current consolidation around $188-190 range"
+    ]
+  },
+  {
+    "visualType": "chart",
+    "chartType": "bar_chart",
+    "dataSource": "bdx_sep_2025_metrics",
+    "dataValue": "Daily trading volumes in millions of shares from June to September 2025",
+    "purpose": "Display daily trading volumes with key events marked to identify periods of high market activity and investor interest",
+    "xAxisLabel": "Date",
+    "yAxisLabel": "Trading Volume (Millions of Shares)",
+    "title": "BDX Daily Trading Volume Analysis: June - September 2025",
+    "dataPoints": [
+      {
+        "x": "2025-06-17",
+        "y": 3.78,
+        "label": "Jun 17"
+      },
+      {
+        "x": "2025-06-18",
+        "y": 2.84,
+        "label": "Jun 18"
+      },
+      {
+        "x": "2025-06-20",
+        "y": 5.09,
+        "label": "Jun 20"
+      },
+      {
+        "x": "2025-06-23",
+        "y": 3.08,
+        "label": "Jun 23"
+      },
+      {
+        "x": "2025-06-24",
+        "y": 2.12,
+        "label": "Jun 24"
+      },
+      {
+        "x": "2025-06-25",
+        "y": 2.92,
+        "label": "Jun 25"
+      },
+      {
+        "x": "2025-06-26",
+        "y": 2.88,
+        "label": "Jun 26"
+      },
+      {
+        "x": "2025-06-27",
+        "y": 3.07,
+        "label": "Jun 27"
+      },
+      {
+        "x": "2025-06-30",
+        "y": 2.53,
+        "label": "Jun 30"
+      },
+      {
+        "x": "2025-07-01",
+        "y": 3.22,
+        "label": "Jul 1"
+      },
+      {
+        "x": "2025-07-02",
+        "y": 3.28,
+        "label": "Jul 2"
+      },
+      {
+        "x": "2025-07-03",
+        "y": 1.06,
+        "label": "Jul 3"
+      },
+      {
+        "x": "2025-07-07",
+        "y": 2.5,
+        "label": "Jul 7"
+      },
+      {
+        "x": "2025-07-08",
+        "y": 1.91,
+        "label": "Jul 8"
+      },
+      {
+        "x": "2025-07-09",
+        "y": 2.21,
+        "label": "Jul 9"
+      },
+      {
+        "x": "2025-07-10",
+        "y": 3.01,
+        "label": "Jul 10"
+      },
+      {
+        "x": "2025-07-11",
+        "y": 2.43,
+        "label": "Jul 11"
+      },
+      {
+        "x": "2025-07-14",
+        "y": 6.39,
+        "label": "Jul 14"
+      },
+      {
+        "x": "2025-07-15",
+        "y": 6.01,
+        "label": "Jul 15"
+      },
+      {
+        "x": "2025-07-16",
+        "y": 3.95,
+        "label": "Jul 16"
+      },
+      {
+        "x": "2025-07-17",
+        "y": 3.47,
+        "label": "Jul 17"
+      },
+      {
+        "x": "2025-07-18",
+        "y": 3.13,
+        "label": "Jul 18"
+      },
+      {
+        "x": "2025-07-22",
+        "y": 1.89,
+        "label": "Jul 22"
+      },
+      {
+        "x": "2025-07-23",
+        "y": 2.62,
+        "label": "Jul 23"
+      },
+      {
+        "x": "2025-07-24",
+        "y": 1.8,
+        "label": "Jul 24"
+      },
+      {
+        "x": "2025-07-28",
+        "y": 1.88,
+        "label": "Jul 28"
+      },
+      {
+        "x": "2025-07-29",
+        "y": 1.5,
+        "label": "Jul 29"
+      },
+      {
+        "x": "2025-08-05",
+        "y": 2.86,
+        "label": "Aug 5"
+      },
+      {
+        "x": "2025-08-06",
+        "y": 4.23,
+        "label": "Aug 6"
+      },
+      {
+        "x": "2025-08-07",
+        "y": 4.84,
+        "label": "Aug 7"
+      },
+      {
+        "x": "2025-08-08",
+        "y": 3.96,
+        "label": "Aug 8"
+      },
+      {
+        "x": "2025-08-11",
+        "y": 2.77,
+        "label": "Aug 11"
+      },
+      {
+        "x": "2025-08-12",
+        "y": 3.17,
+        "label": "Aug 12"
+      },
+      {
+        "x": "2025-08-13",
+        "y": 2.67,
+        "label": "Aug 13"
+      },
+      {
+        "x": "2025-08-14",
+        "y": 2.28,
+        "label": "Aug 14"
+      },
+      {
+        "x": "2025-08-15",
+        "y": 2.62,
+        "label": "Aug 15"
+      },
+      {
+        "x": "2025-08-18",
+        "y": 1.76,
+        "label": "Aug 18"
+      },
+      {
+        "x": "2025-08-19",
+        "y": 1.9,
+        "label": "Aug 19"
+      },
+      {
+        "x": "2025-08-20",
+        "y": 2.49,
+        "label": "Aug 20"
+      },
+      {
+        "x": "2025-08-21",
+        "y": 1.3,
+        "label": "Aug 21"
+      },
+      {
+        "x": "2025-08-22",
+        "y": 1.62,
+        "label": "Aug 22"
+      },
+      {
+        "x": "2025-08-25",
+        "y": 1.23,
+        "label": "Aug 25"
+      },
+      {
+        "x": "2025-08-26",
+        "y": 2.25,
+        "label": "Aug 26"
+      },
+      {
+        "x": "2025-08-27",
+        "y": 1.33,
+        "label": "Aug 27"
+      },
+      {
+        "x": "2025-08-28",
+        "y": 1.79,
+        "label": "Aug 28"
+      },
+      {
+        "x": "2025-08-29",
+        "y": 1.33,
+        "label": "Aug 29"
+      },
+      {
+        "x": "2025-09-02",
+        "y": 1.63,
+        "label": "Sep 2"
+      },
+      {
+        "x": "2025-09-03",
+        "y": 3.62,
+        "label": "Sep 3"
+      },
+      {
+        "x": "2025-09-04",
+        "y": 1.28,
+        "label": "Sep 4"
+      },
+      {
+        "x": "2025-09-05",
+        "y": 1.24,
+        "label": "Sep 5"
+      },
+      {
+        "x": "2025-09-08",
+        "y": 2.6,
+        "label": "Sep 8"
+      },
+      {
+        "x": "2025-09-09",
+        "y": 1.51,
+        "label": "Sep 9"
+      },
+      {
+        "x": "2025-09-10",
+        "y": 1.87,
+        "label": "Sep 10"
+      },
+      {
+        "x": "2025-09-11",
+        "y": 1.57,
+        "label": "Sep 11"
+      },
+      {
+        "x": "2025-09-12",
+        "y": 1.12,
+        "label": "Sep 12"
+      }
+    ],
+    "colorScheme": "Corporate",
+    "annotations": [
+      "Peak Volume: Jul 14 (6.39M shares)",
+      "High Activity Period: Jul 14-15",
+      "Dividend Payment: Sep 8 ($1.04)",
+      "Market Volatility: Aug 6-8",
+      "Low Volume Holiday: Jul 3 (1.06M shares)"
+    ]
+  },
+  {
+    "visualType": "chart",
+    "chartType": "line_chart",
+    "dataSource": "volatility_analysis_sep",
+    "dataValue": "Daily price volatility (High-Low range) for BDX stock comparing August and September 2025",
+    "purpose": "Compare volatility trends between August and September to assess market stability and risk patterns",
+    "xAxisLabel": "Date",
+    "yAxisLabel": "Daily Volatility (USD)",
+    "title": "BDX Stock Volatility Comparison: August vs September 2025",
+    "dataPoints": [
+      {
+        "x": "2025-08-05",
+        "y": 3.57,
+        "label": "Aug 5",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-06",
+        "y": 5.19,
+        "label": "Aug 6",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-07",
+        "y": 5.91,
+        "label": "Aug 7",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-08",
+        "y": 7.01,
+        "label": "Aug 8",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-11",
+        "y": 3.9,
+        "label": "Aug 11",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-12",
+        "y": 2.6,
+        "label": "Aug 12",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-13",
+        "y": 2.33,
+        "label": "Aug 13",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-14",
+        "y": 2.17,
+        "label": "Aug 14",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-15",
+        "y": 2.35,
+        "label": "Aug 15",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-18",
+        "y": 2.46,
+        "label": "Aug 18",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-19",
+        "y": 3.99,
+        "label": "Aug 19",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-20",
+        "y": 2.75,
+        "label": "Aug 20",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-21",
+        "y": 2.48,
+        "label": "Aug 21",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-22",
+        "y": 2.97,
+        "label": "Aug 22",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-25",
+        "y": 5.45,
+        "label": "Aug 25",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-26",
+        "y": 1.73,
+        "label": "Aug 26",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-27",
+        "y": 2.01,
+        "label": "Aug 27",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-28",
+        "y": 4.56,
+        "label": "Aug 28",
+        "month": "August"
+      },
+      {
+        "x": "2025-08-29",
+        "y": 2.04,
+        "label": "Aug 29",
+        "month": "August"
+      },
+      {
+        "x": "2025-09-02",
+        "y": 5.96,
+        "label": "Sep 2",
+        "month": "September"
+      },
+      {
+        "x": "2025-09-03",
+        "y": 5.89,
+        "label": "Sep 3",
+        "month": "September"
+      },
+      {
+        "x": "2025-09-04",
+        "y": 4.28,
+        "label": "Sep 4",
+        "month": "September"
+      },
+      {
+        "x": "2025-09-05",
+        "y": 2.15,
+        "label": "Sep 5",
+        "month": "September"
+      },
+      {
+        "x": "2025-09-08",
+        "y": 4.08,
+        "label": "Sep 8",
+        "month": "September"
+      },
+      {
+        "x": "2025-09-09",
+        "y": 2.13,
+        "label": "Sep 9",
+        "month": "September"
+      },
+      {
+        "x": "2025-09-10",
+        "y": 3,
+        "label": "Sep 10",
+        "month": "September"
+      },
+      {
+        "x": "2025-09-11",
+        "y": 3.17,
+        "label": "Sep 11",
+        "month": "September"
+      },
+      {
+        "x": "2025-09-12",
+        "y": 3.06,
+        "label": "Sep 12",
+        "month": "September"
+      }
+    ],
+    "colorScheme": "Corporate blue for August trend, corporate green for September trend",
+    "annotations": [
+      "Peak volatility on Aug 8 ($7.01 range)",
+      "High volatility period: early August",
+      "September shows more moderate volatility",
+      "Average August volatility: $3.42",
+      "Average September volatility: $3.64",
+      "Volatility spike on Sep 2-3 following month transition"
+    ]
+  }
+]
